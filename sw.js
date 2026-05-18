@@ -1,6 +1,6 @@
 // PhotoManuel — Service Worker
 // Version du cache
-const CACHE_NAME = 'photomanuel-v2';
+const CACHE_NAME = 'photomanuel-v3';
 
 // Fichiers à mettre en cache pour le mode hors-ligne
 const ASSETS = [
