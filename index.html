@@ -1451,10 +1451,17 @@ document.getElementById('popup-overlay').addEventListener('click',e=>{
 //  BOTTOM SHEET SCHÉMA
 // ═══════════════════════════════════════════
 function openSheet(){
-  refreshSchema();
-  document.getElementById('sheet-overlay').classList.add('open');
-  // Déclencher le positionnement des annotations après rendu
-  setTimeout(positionAnnotations, 80);
+  // Ouvrir le drawer EN PREMIER, avant tout calcul
+  const overlay=document.getElementById('sheet-overlay');
+  if(!overlay)return;
+  overlay.classList.add('open');
+  // Puis remplir le contenu si on a un preset
+  if(currentPopupPreset){
+    try{refreshSchema();}catch(e){console.warn('[openSheet]',e);}
+    setTimeout(()=>{
+      try{if(currentDrawerTab==='schema')positionAnnotations();}catch(e){console.warn('[pos]',e);}
+    },120);
+  }
 }
 function closeSheet(){document.getElementById('sheet-overlay').classList.remove('open');}
 

@@ -1,5 +1,5 @@
 // PhotoManuel — Service Worker
-const CACHE_NAME = 'photomanuel-v16';
+const CACHE_NAME = 'photomanuel-v17';
 
 const ASSETS = [
   './index.html',
