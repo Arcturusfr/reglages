@@ -199,25 +199,11 @@
     [data-theme="light"] .svg-wrap{background:rgba(0,0,0,.03)}
     .svg-wrap svg{width:100%;height:auto;display:block}
     /* Points d'annotation animés sur le SVG */
-    /* ── Annotations schéma technique ── */
+    /* ── Annotations SVG intégrées ── */
     .anno-wrap{width:100%}
-    .anno-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
-    .anno-labels-top,.anno-labels-bottom{
-      display:flex;flex-wrap:wrap;justify-content:center;
-      gap:6px;padding:6px 8px;min-height:28px;
-    }
-    .anno-lbl{
-      font-family:'Inter',sans-serif;font-size:10px;font-weight:700;
-      white-space:nowrap;text-align:center;line-height:1.3;
-      color:var(--cactive);padding:3px 8px;
-      background:rgba(10,12,16,.82);border:1px solid var(--cactive);
-      border-radius:4px;
-    }
-    [data-theme="light"] .anno-lbl{background:rgba(250,248,244,.92);color:var(--gold);border-color:var(--gold)}
-    @keyframes annoPulse{
-      0%,100%{opacity:1}50%{opacity:.5}
-    }
+    @keyframes annoPulse{0%,100%{opacity:1}50%{opacity:.45}}
     .dot-active{animation:annoPulse 1.5s ease-in-out infinite}
+    .anno-overlay-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:4}
 
     /* Onglets de vue */
     .sheet-view-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(196,160,90,.02);flex-shrink:0}
@@ -228,6 +214,107 @@
     .svt:hover:not(.active){color:var(--silver)}
     /* Vues multiples */
     .schema-view{display:none}.schema-view.active{display:block}
+    /* ── Onglets drawer ── */
+    .drawer-tab{display:none}.drawer-tab.active{display:block}
+    .schema-sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(196,160,90,.02);margin-bottom:10px}
+
+    /* ── Écran LCD simulé ── */
+    .lcd-screen{
+      background:#0a0f0a;border:2px solid #2a3a2a;border-radius:10px;
+      padding:12px 14px;margin-bottom:14px;font-family:'Courier New',monospace;
+      box-shadow:inset 0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(40,120,40,.15);
+    }
+    [data-theme="light"] .lcd-screen{background:#1a2a1a;border-color:#2a4a2a}
+    .lcd-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1a2a1a}
+    .lcd-mode{font-size:1.3rem;font-weight:900;color:#4eff4e;letter-spacing:.05em;min-width:20px}
+    .lcd-preset-name{font-size:.75rem;color:#3dd63d;letter-spacing:.04em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lcd-cond{font-size:.65rem;color:#2a9a2a;letter-spacing:.03em;white-space:nowrap}
+    .lcd-main-row{display:flex;align-items:center;gap:0;margin-bottom:10px}
+    .lcd-param{flex:1;text-align:center}
+    .lcd-sep{color:#1a4a1a;font-size:1.2rem;padding:0 4px}
+    .lcd-p-label{font-size:.6rem;color:#2a8a2a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+    .lcd-p-value{font-size:1.35rem;font-weight:700;color:#4eff4e;letter-spacing:.02em;line-height:1}
+    .lcd-p-value.active{color:#7fff7f;text-shadow:0 0 8px rgba(78,255,78,.5)}
+    .lcd-sub-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+    .lcd-sub-item{display:flex;gap:4px;align-items:center}
+    .lcd-sub-label{font-size:.6rem;color:#2a7a2a;letter-spacing:.08em}
+    .lcd-sub-value{font-size:.72rem;color:#3dd63d;font-weight:600}
+    .lcd-sub-value.active{color:#7fff7f}
+    .lcd-bar{display:flex;gap:6px;align-items:center;padding-top:6px;border-top:1px solid #1a2a1a}
+    .lcd-bar-item{font-size:.65rem;color:#2a8a2a}
+    .lcd-bar-item.active{color:#4eff4e}
+    .lcd-bar-sep{color:#1a3a1a}
+
+    /* ── Mini-cartes commandes ── */
+    .control-cards{display:flex;flex-direction:column;gap:10px}
+    .ctrl-card{
+      border-radius:10px;padding:12px 14px;
+      display:flex;align-items:center;gap:14px;
+      border:2px solid;
+    }
+    .ctrl-card-icon{width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid currentColor;font-size:1.4rem}
+    .ctrl-card-body{flex:1;min-width:0}
+    .ctrl-card-name{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;opacity:.8}
+    .ctrl-card-value{font-size:1.05rem;font-weight:700;line-height:1.2;margin-bottom:3px}
+    .ctrl-card-action{font-size:.75rem;opacity:.75;display:flex;align-items:center;gap:4px}
+    .ctrl-card-hw{font-size:.7rem;opacity:.6;margin-top:2px;font-style:italic}
+    /* Couleurs par catégorie */
+    .cat-expo  {border-color:#e05050;background:rgba(224,80,80,.08);color:#e05050}
+    .cat-focus {border-color:#4090e0;background:rgba(64,144,224,.08);color:#4090e0}
+    .cat-wb    {border-color:#e0c040;background:rgba(224,192,64,.08);color:#e0c040}
+    .cat-drive {border-color:#40c080;background:rgba(64,192,128,.08);color:#40c080}
+    .cat-misc  {border-color:#c080e0;background:rgba(192,128,224,.08);color:#c080e0}
+    [data-theme="light"] .cat-expo  {border-color:#c02020;background:rgba(192,32,32,.07);color:#c02020}
+    [data-theme="light"] .cat-focus {border-color:#1060c0;background:rgba(16,96,192,.07);color:#1060c0}
+    [data-theme="light"] .cat-wb    {border-color:#908010;background:rgba(144,128,16,.07);color:#906000}
+    [data-theme="light"] .cat-drive {border-color:#208050;background:rgba(32,128,80,.07);color:#208050}
+    [data-theme="light"] .cat-misc  {border-color:#8040b0;background:rgba(128,64,176,.07);color:#8040b0}
+
+    /* ── Sous-onglets écran ── */
+    .screen-sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:12px}
+    .sst{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);padding:7px 14px 9px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;transition:all .2s;flex:1;text-align:center}
+    .sst.active{color:var(--active-tab);border-bottom-color:var(--active-tab);font-weight:700}
+    .screen-tab{display:none}.screen-tab.active{display:block}
+
+    /* ── Live View ── */
+    .liveview-wrap{
+      background:#0a0a0a;border:2px solid #222;border-radius:8px;
+      position:relative;overflow:hidden;aspect-ratio:3/2;
+      display:flex;align-items:center;justify-content:center;
+    }
+    [data-theme="light"] .liveview-wrap{background:#111;border-color:#333}
+    .lv-frame{position:absolute;inset:12%;pointer-events:none}
+    .lv-corner{position:absolute;width:18px;height:18px;border-color:#fff;border-style:solid;opacity:.7}
+    .lv-corner.tl{top:0;left:0;border-width:2px 0 0 2px}
+    .lv-corner.tr{top:0;right:0;border-width:2px 2px 0 0}
+    .lv-corner.bl{bottom:0;left:0;border-width:0 0 2px 2px}
+    .lv-corner.br{bottom:0;right:0;border-width:0 2px 2px 0}
+    .lv-center-cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px}
+    .lv-center-cross::before,.lv-center-cross::after{content:'';position:absolute;background:#fff;opacity:.5}
+    .lv-center-cross::before{width:100%;height:1px;top:50%;left:0}
+    .lv-center-cross::after{width:1px;height:100%;left:50%;top:0}
+    .lv-grid{position:absolute;inset:0;
+      background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+      background-size:33.3% 33.3%}
+    .lv-overlay-top{
+      position:absolute;top:0;left:0;right:0;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:6px 10px;
+      background:linear-gradient(180deg,rgba(0,0,0,.6) 0%,transparent 100%);
+    }
+    .lv-val{font-family:'Courier New',monospace;font-size:.95rem;font-weight:700;color:#fff;letter-spacing:.04em}
+    .lv-val::before{content:attr(data-label)' ';font-size:.6rem;opacity:.7;font-weight:400}
+    .lv-mode{font-family:'Courier New',monospace;font-size:1.1rem;font-weight:900;color:#4eff4e;letter-spacing:.05em}
+    .lv-overlay-bottom{
+      position:absolute;bottom:0;left:0;right:0;
+      display:flex;align-items:center;justify-content:space-around;
+      padding:6px 10px;
+      background:linear-gradient(0deg,rgba(0,0,0,.6) 0%,transparent 100%);
+    }
+    .lv-val-sm{font-family:'Courier New',monospace;font-size:.72rem;color:#ddd;letter-spacing:.04em}
+    .lv-histo{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+      background:rgba(0,0,0,.5);border-radius:4px;padding:2px 4px}
+
     /* Légende */
     .schema-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
     .leg-item{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--tip-text)}
@@ -396,19 +483,92 @@
       </div>
       <button class="sheet-close" onclick="closeSheet()">✕</button>
     </div>
-    <!-- Onglets de vue -->
+    <!-- ═══ NOUVEAU DRAWER : LCD + MINI-CARTES + SCHÉMA ═══ -->
+    <!-- Onglets principaux du drawer -->
     <div class="sheet-view-tabs">
-      <button class="svt active" id="svt-front" onclick="switchView('front')">📷 Face avant</button>
-      <button class="svt" id="svt-lens"  onclick="switchView('lens')">🔭 Objectif</button>
-      <button class="svt" id="svt-back"  onclick="switchView('back')">🔄 Face arrière</button>
+      <button class="svt active" id="svt-controls" onclick="switchDrawerTab('controls')">🎛 Commandes</button>
+      <button class="svt" id="svt-screen"   onclick="switchDrawerTab('screen')">📺 Écran</button>
+      <button class="svt" id="svt-schema"   onclick="switchDrawerTab('schema')">📷 Schéma</button>
     </div>
     <div class="sheet-body">
-      <!-- Étiquettes au-dessus -->
-      <div class="anno-labels-top" id="anno-top"></div>
-      <!-- Vue face avant -->
-      <div class="anno-wrap schema-view active" id="view-front">
-      <div class="svg-wrap" id="svg-real-wrap" style="position:relative">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1365" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" id="xs20-svg">
+
+      <!-- ════ ONGLET COMMANDES : mini-cartes ════ -->
+      <div class="drawer-tab active" id="dtab-controls">
+        <div class="control-cards" id="control-cards"></div>
+      </div>
+
+      <!-- ════ ONGLET ÉCRAN : Info + Live View ════ -->
+      <div class="drawer-tab" id="dtab-screen">
+        <div class="screen-sub-tabs">
+          <button class="sst active" id="sst-info"     onclick="switchScreenTab('info')">ℹ️ Info</button>
+          <button class="sst"        id="sst-liveview" onclick="switchScreenTab('liveview')">🎥 Live View</button>
+        </div>
+        <!-- Sous-onglet INFO -->
+        <div class="screen-tab active" id="stab-info">
+          <div class="lcd-screen" id="lcd-screen">
+            <div class="lcd-header">
+              <span class="lcd-mode">M</span>
+              <span class="lcd-preset-name" id="lcd-preset-name">—</span>
+              <span class="lcd-cond" id="lcd-cond"></span>
+            </div>
+            <div class="lcd-main-row">
+              <div class="lcd-param"><div class="lcd-p-label">Av</div><div class="lcd-p-value" id="lcd-av">—</div></div>
+              <div class="lcd-sep">|</div>
+              <div class="lcd-param"><div class="lcd-p-label">Tv</div><div class="lcd-p-value" id="lcd-tv">—</div></div>
+              <div class="lcd-sep">|</div>
+              <div class="lcd-param"><div class="lcd-p-label">ISO</div><div class="lcd-p-value" id="lcd-iso">—</div></div>
+            </div>
+            <div class="lcd-sub-row">
+              <div class="lcd-sub-item" id="lcd-wb-blk"><span class="lcd-sub-label">WB</span><span class="lcd-sub-value" id="lcd-wb">—</span></div>
+              <div class="lcd-sub-item" id="lcd-metering-blk"><span class="lcd-sub-label">⊙</span><span class="lcd-sub-value" id="lcd-metering">—</span></div>
+              <div class="lcd-sub-item" id="lcd-af-blk"><span class="lcd-sub-label">AF</span><span class="lcd-sub-value" id="lcd-af">—</span></div>
+              <div class="lcd-sub-item" id="lcd-drive-blk"><span class="lcd-sub-label">□</span><span class="lcd-sub-value" id="lcd-drive">—</span></div>
+            </div>
+            <div class="lcd-bar">
+              <span class="lcd-bar-item" id="lcd-focal">—</span>
+              <span class="lcd-bar-sep">·</span>
+              <span class="lcd-bar-item" id="lcd-format">RAW</span>
+            </div>
+          </div>
+        </div>
+        <!-- Sous-onglet LIVE VIEW -->
+        <div class="screen-tab" id="stab-liveview">
+          <div class="liveview-wrap">
+            <div class="lv-frame">
+              <div class="lv-corner tl"></div><div class="lv-corner tr"></div>
+              <div class="lv-corner bl"></div><div class="lv-corner br"></div>
+              <div class="lv-center-cross"></div>
+              <div class="lv-grid"></div>
+            </div>
+            <div class="lv-overlay-top">
+              <span class="lv-val" id="lv-av" data-label="Av">—</span>
+              <span class="lv-val" id="lv-tv" data-label="Tv">—</span>
+              <span class="lv-val" id="lv-iso" data-label="ISO">—</span>
+              <span class="lv-mode">M</span>
+            </div>
+            <div class="lv-overlay-bottom">
+              <span class="lv-val-sm" id="lv-wb">WB —</span>
+              <span class="lv-val-sm" id="lv-af">AF —</span>
+              <span class="lv-val-sm" id="lv-drive">□ —</span>
+              <span class="lv-val-sm" id="lv-format">RAW</span>
+            </div>
+            <div class="lv-histo">
+              <svg id="lv-histo-svg" viewBox="0 0 80 30" width="80" height="30"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ONGLET SCHÉMA : vues annotées ════ -->
+      <div class="drawer-tab" id="dtab-schema">
+        <div class="schema-sub-tabs">
+          <button class="svt active" id="svt-front" onclick="switchView('front')">📷 Face avant</button>
+          <button class="svt" id="svt-lens"  onclick="switchView('lens')">🔭 Objectif</button>
+          <button class="svt" id="svt-back"  onclick="switchView('back')">🔄 Face arrière</button>
+        </div>
+        <div class="anno-wrap schema-view active" id="view-front">
+          <div class="svg-wrap" id="svg-real-wrap" style="position:relative">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1365" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" id="xs20-svg">
 <!-- fond transparent -->
 <path transform="translate(0,0)" fill="rgb(0,0,0)" d="M 1149.32 26.1906 C 1157.65 25.9908 1166.14 28.6025 1174.12 30.8311 L 1181.78 27.713 C 1188.23 29.0524 1196.86 30.6672 1202.96 32.8085 C 1211.66 35.8635 1221.23 41.3481 1230.24 43.4411 C 1253.76 48.9073 1277.4 53.2313 1300.92 58.8981 C 1332.46 31.9282 1411.58 48.2268 1447.44 62.3671 C 1454.17 66.0825 1460.24 69.978 1466.72 74.2617 C 1487.16 89.1809 1532.05 95.4967 1547.68 112.833 C 1590.05 159.854 1606.88 238.653 1608.43 297.486 C 1613.2 297.096 1617.98 296.756 1622.76 296.466 C 1663.52 293.978 1728.98 297.223 1762.61 325.3 C 1774.18 334.963 1776.62 347.729 1777.31 362.042 C 1792.87 363.516 1843.14 369.143 1854.19 380.717 C 1876.08 403.639 1887.98 449.01 1901.28 478.108 C 1903.71 483.42 1913.71 494.727 1917.83 499.956 C 1921.6 524.164 1918.44 556.308 1919.22 581.549 C 1921.24 646.38 1917.09 711.771 1916.77 776.346 L 1916.17 1006.86 L 1916.98 1101.49 C 1917.11 1123.9 1919.54 1180.66 1907.46 1202.57 C 1905.52 1206.09 1882.22 1224.75 1877.7 1228.4 C 1826.54 1269.72 1771.92 1324.87 1700.93 1321.06 C 1661.54 1318.98 1621.7 1308.06 1583.32 1299.2 L 1444.06 1267.44 L 923.217 1149.02 C 854.972 1132.58 785.337 1117.31 716.842 1101.55 L 650.148 1086.04 C 596.793 1073.43 602.829 1068.99 554.815 1094.1 L 485.716 1130.4 C 466.676 1140.32 446.798 1152.31 425.891 1157.6 C 370.026 1171.72 233.886 1144.18 184.072 1114.06 C 168.737 1104.79 154.868 1090.48 150.697 1072.54 C 146.367 1053.92 148.343 1001.87 148.257 979.655 L 147.976 772.051 L 147.97 531.225 L 147.964 465.159 C 147.957 455.573 147.841 415.008 150.469 407.294 C 163.343 369.502 189.68 315.414 209.716 282.414 C 255.894 206.358 346.468 126.683 434.203 106.362 C 438.581 98.4459 452.087 93.5888 460.241 91.3751 C 513.162 77.0084 647.454 80.5046 682.397 129.225 C 695.738 132.019 711.305 135.984 724.429 139.476 C 782.902 109.172 935.542 105.317 977.202 164.31 C 987.493 151.307 1008.49 124.632 1019.44 113.759 C 1034.08 103.582 1053.23 87.4223 1068.25 79.0012 C 1087.81 68.0322 1129.71 31.95 1149.32 26.1906 z"/>
 <path transform="translate(0,0)" fill="rgb(254,254,254)" d="M 1024.56 474.394 C 1034.24 472.978 1050.65 473.532 1060.57 473.742 C 1156.89 475.785 1243.5 517.339 1315.03 580.253 C 1404.23 657.325 1458.7 767.034 1466.16 884.686 C 1471.37 966.878 1446.61 1051.83 1391.66 1114.1 C 1348.15 1163.51 1286.7 1193.47 1220.98 1197.32 C 1220.04 1197.44 1219.09 1197.54 1218.15 1197.62 C 1198.12 1199.48 1176.98 1197.83 1157.14 1195 C 1083.05 1183.95 1013.52 1152.42 956.37 1103.99 C 860.152 1023.9 792.192 904.12 780.799 778.886 C 773.026 700.367 796.945 621.998 847.237 561.201 C 894.76 504.47 952.298 480.916 1024.56 474.394 z"/>
@@ -647,12 +807,11 @@
 <path transform="translate(0,0)" fill="rgb(79,79,80)" d="M 1243.27 1202.09 C 1238.01 1203.16 1234.34 1203.79 1229.1 1201.8 C 1231.01 1200.47 1233.59 1201.03 1236.05 1201.2 L 1243.27 1202.09 z"/>
 <path transform="translate(0,0)" fill="rgb(139,138,143)" d="M 1290.5 1187.69 C 1295.38 1185.49 1299.56 1183.89 1304.6 1182.05 L 1306.42 1183.37 C 1300.06 1185.59 1297.1 1186.49 1290.5 1187.69 z"/>
 </svg>
-      </div>
-      </div><!-- /anno-wrap vue avant -->
-      <!-- Vue face arrière -->
-      <div class="anno-wrap schema-view" id="view-back">
-        <div class="svg-wrap" id="svg-back-wrap" style="position:relative">
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4096 1274" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" id="xs20-back-content">
+          </div>
+        </div>
+        <div class="anno-wrap schema-view" id="view-back">
+          <div class="svg-wrap" id="svg-back-wrap" style="position:relative">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4096 1274" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" id="xs20-back-content">
 <defs>
 	<linearGradient id="Gradient1" gradientUnits="userSpaceOnUse" x1="2247.16" y1="269.531" x2="2335.31" y2="330.382">
 		<stop class="stop0" offset="0" stop-opacity="1" stop-color="rgb(0,0,0)"/>
@@ -848,12 +1007,11 @@
 <path transform="translate(0,0)" fill="rgb(161,161,161)" d="M 1447.63 359.505 L 1448.98 360.84 C 1449.95 366.073 1446.82 370.665 1444.3 375.218 C 1440.59 371.765 1445.79 363.213 1447.63 359.505 z"/>
 <path transform="translate(0,0)" fill="rgb(51,51,51)" d="M 1421.84 349.838 C 1420.87 354.622 1420.99 358.498 1419.62 363.901 L 1418.77 362.679 C 1417.9 357.745 1418.13 352.991 1420.87 348.633 L 1421.84 349.838 z"/>
 </svg>
+          </div>
         </div>
-      </div>
-      <!-- Vue objectif -->
-      <div class="anno-wrap schema-view" id="view-lens">
-        <div class="svg-wrap" id="svg-lens-wrap" style="position:relative">
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2120 2120" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" id="xs20-lens-content">
+        <div class="anno-wrap schema-view" id="view-lens">
+          <div class="svg-wrap" id="svg-lens-wrap" style="position:relative">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2120 2120" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" id="xs20-lens-content">
 <!-- fond transparent -->
 <path transform="translate(0,0)" fill="rgb(253,253,253)" d="M 817.277 194.762 C 828.624 193.326 845.992 195.321 858.158 195.3 C 989.914 195.078 1121.72 194.542 1253.47 195.233 C 1262.02 195.277 1303.05 193.519 1307.27 196.134 C 1299.71 199.044 1250.32 193.744 1240.36 197.261 C 1278.64 197.702 1317.14 196.33 1355.38 197.653 C 1366.29 198.031 1372.57 213.618 1387.81 213.645 C 1460.54 213.777 1534.26 213.653 1606.84 213.865 C 1623.55 213.868 1640.26 213.762 1656.96 213.546 C 1666.65 213.426 1675.39 213.075 1685.17 213.708 C 1706.74 215.105 1718.87 241.433 1734.02 245.558 C 1743.56 248.156 1767.72 246.041 1781.9 247.73 L 1776.81 248.012 C 1785.45 248.741 1790.62 249.013 1798.9 251.651 L 1797.31 251.496 C 1811.53 256.714 1819.05 264.66 1828.09 276.458 C 1836.58 287.541 1845.5 297.403 1852.36 309.96 C 1857.81 319.949 1863.17 333.059 1870.09 342.329 C 1892.3 361.758 1915.13 380.895 1937.34 400.346 C 1940.87 403.443 1945.13 409.387 1948.24 413.094 C 1954.69 420.787 1961.15 428.575 1967.32 436.486 C 1994.78 472.927 2005.12 519.722 2017.18 562.895 C 2020.67 575.395 2021.94 589.112 2025.36 601.665 C 2030.54 619.638 2036.77 637.431 2041.85 655.481 C 2051.87 691.575 2059 728.41 2063.17 765.636 C 2064.05 774 2060.51 786.627 2061.56 793.011 C 2066.11 820.722 2066.74 848.46 2070.78 876.085 C 2072.85 890.327 2070.43 904.617 2074.76 918.674 C 2075.96 922.564 2072.93 934.92 2075.02 939.587 C 2077.92 953.791 2077.44 970.214 2078.3 984.672 C 2080.58 1069.86 2080.93 1154.95 2077.06 1240.11 C 2076.47 1253.15 2081.81 1267.48 2080.34 1280.88 C 2077.14 1341.55 2070.41 1401.79 2061.06 1461.83 C 2056.16 1494.65 2049.33 1527.14 2040.62 1559.15 C 2036.41 1574.5 2030.66 1589.74 2026.71 1604.94 C 2013.62 1655.24 2001.87 1729.54 1969.7 1772.44 C 1948.86 1800.22 1913.05 1832.71 1889.92 1859.39 C 1885.56 1864.43 1872.87 1874.06 1869.87 1878.25 C 1848.65 1907.89 1835.67 1943.1 1807.69 1967.91 C 1791.73 1982.06 1742.46 1970.37 1734.66 1976.07 C 1737.12 1976.4 1738.75 1976.4 1741.23 1976.46 L 1740.65 1977.45 C 1738.03 1977.54 1729.81 1977.75 1727.84 1978.53 C 1715.87 1983.29 1708.93 2002.19 1695.21 2002.36 C 1693.17 2002.38 1693.33 2002.32 1691.38 2002.9 L 1693.01 2004.42 C 1689.47 2006.53 1629.26 2005.88 1626.05 2004.55 C 1628.35 2003.6 1654.68 2003.7 1658.73 2003.63 C 1634.62 1996.94 1574.24 2008.4 1549.51 2000.2 L 1549.89 2000.49 C 1541.94 1998.16 1534.98 1992.53 1527.29 1990.51 C 1515.57 1987.43 1392.09 1987.86 1377.66 1990.35 C 1374.89 1993.24 1374.93 1993.12 1371.61 1994.92 C 1370.28 1998.43 1352.32 2005.87 1348.56 2005.96 C 1339.19 2006.2 1329.22 2005.89 1319.79 2005.88 L 1256.44 2005.74 L 957.191 2005.72 L 869.267 2006.13 C 854.582 2006.24 837.332 2006.68 823.479 2005.96 C 812.801 2005.4 794.378 1994.71 788.326 1986.01 C 788.049 1985.61 785.254 1983.18 785.219 1983.19 C 780.551 1983.88 773.299 1989.55 768.815 1991.16 C 764.915 1992.55 763.36 1993.68 760.227 1993.74 C 746.207 1993.97 731.955 1993.82 718.005 1993.84 C 688.172 1994.01 658.338 1994.02 628.504 1993.87 L 570.406 1994.24 C 561.034 1994.31 548.84 1995.01 540.477 1994.22 C 527.337 1992.97 513.449 1988.2 505.314 1977.59 C 504.875 1976.78 499.635 1972.57 498.816 1973.35 C 473.407 1997.44 451.78 1993.65 418.943 1993.18 C 402.632 1992.98 386.319 1992.94 370.008 1993.08 L 317.993 1993.47 C 303.193 1993.58 298.003 1995.62 284.566 1989.14 C 267.268 1980.79 262.664 1972.71 250.815 1959.02 C 242.293 1959.19 235.133 1959.75 226.964 1957.45 C 206.088 1951.56 189.072 1929.9 179.433 1911.33 C 141.018 1835.89 124.817 1749.51 111.797 1666.48 C 71.3799 1408.73 69.9542 1145.62 77.4846 885.418 C 77.6668 879.122 78.8742 874.447 79.7473 868.377 C 80.3564 864.142 78.823 857.469 79.3759 852.984 C 83.8627 810.626 83.7137 767.3 88.0884 725.01 C 97.421 640.232 105.939 554.448 122.392 470.455 C 131.741 422.731 144.318 371.595 162.448 326.502 C 173.406 299.246 189.659 266.474 214.552 249.578 C 219.839 243.149 248.118 243.842 250.984 241.01 C 260.363 231.742 270.04 217.485 285.584 211.944 C 291.672 209.774 299.887 209.454 305.523 209.414 C 357.512 209.048 409.527 209.635 461.525 208.878 C 465.335 208.823 494.035 221.449 497.869 223.922 L 498.163 228.426 C 498.572 228.573 498.98 228.72 499.388 228.868 C 505.551 222.81 521.534 208.979 530.444 208.904 C 546.047 208.773 564.032 209.828 580.466 209.686 C 639.592 209.174 699.044 209.616 758.19 209.608 C 762.666 209.607 771.19 209.879 775.339 211.055 C 777.267 211.601 786.126 217.685 786.833 217.054 C 793.817 210.815 802.805 200.286 812.505 197.699 C 815.788 196.823 825.279 197.097 828.837 197.139 C 824.973 196.402 821.119 195.609 817.277 194.762 z"/>
 <path transform="translate(0,0)" fill="rgb(37,35,33)" d="M 498.684 238.188 C 516.463 220.087 521.749 214.265 548.026 214.416 C 618.49 214.82 688.848 217.916 759.314 217.043 C 762.601 217.173 765.685 217.07 768.87 217.867 C 771.571 218.543 784.5 227.174 786.195 225.962 C 798.775 216.966 808.619 204.441 825.35 203.248 C 835.393 202.532 845.928 202.617 856.099 202.478 C 875.754 202.213 895.41 202.048 915.066 201.983 C 1009.3 201.644 1103.34 204.979 1197.63 203.549 C 1246.78 202.804 1297.54 201.829 1346.71 202.641 C 1359.04 202.845 1370.13 213.699 1380.02 220.188 C 1425.8 221.679 1472.06 219.347 1517.91 220.685 C 1560.19 221.919 1602.77 220.373 1645.12 221.709 C 1660.74 222.202 1676.51 220.934 1691.73 224.634 C 1705.92 228.083 1718.09 247.169 1728.33 255.598 C 1748.92 256.684 1781.52 253.315 1798.79 259.346 C 1812.44 264.114 1841.51 300.734 1847.72 314.189 C 1860.94 342.867 1868.68 350.299 1894.09 370.739 C 1922.77 393.814 1951.17 420.907 1971.5 452.14 C 1999.8 499.746 2009.67 555.191 2022.04 608.408 C 2025.62 623.787 2033 639.648 2036.37 655.031 C 2044.34 691.346 2059.12 740.104 2057.66 776.67 C 2056.38 808.823 2060.85 834.831 2063.76 866.111 C 2067.25 906.565 2070.19 947.065 2072.56 987.6 C 2076.79 1072.01 2075.19 1158.98 2070.82 1243.32 C 2070.2 1255.34 2075.7 1263.04 2074.66 1280.78 C 2069.65 1366.4 2060.34 1451.41 2041.84 1535.24 C 2036.46 1559.6 2027.47 1580.71 2022.12 1602.62 C 2009.99 1654.52 2000.44 1709.29 1973.14 1755.85 C 1966.15 1767.78 1953.96 1780.28 1944.34 1790.4 C 1918.22 1817.91 1890.56 1844.11 1864.24 1871.43 C 1857.28 1878.65 1852.59 1890.34 1847.56 1898.97 C 1837.23 1917.32 1823.88 1939.65 1808.51 1953.75 C 1787.18 1973.32 1755.75 1963.06 1726.08 1966.49 C 1709.49 1983.5 1699.08 1994.74 1673.67 1993.86 C 1632.5 1992.44 1590.83 1992.65 1549.73 1989.92 C 1541.57 1989.38 1531.62 1980.58 1523.12 1980.46 C 1500.77 1979.7 1475.95 1979.31 1453.64 1979.81 C 1430.27 1980.33 1401.66 1978.79 1378.97 1980.26 C 1350.06 2001.2 1349.27 1998.19 1313.98 1998.17 L 1260.31 1998.11 L 1080.59 1998.07 L 910.271 1998.03 C 885.588 1998.09 860.771 1998.2 836.095 1998.14 C 810.393 1998.08 803.059 1990.28 785.524 1973.29 C 779.203 1977.4 769.979 1983.68 762.569 1984.72 C 746.518 1986.97 726.671 1986.12 710.245 1986.09 L 612.733 1986.01 C 599.152 1986.07 585.141 1986.11 571.603 1986.17 C 541.724 1986.3 523.388 1989.13 502.017 1964.76 L 499.293 1962.71 C 495.293 1963.61 480.436 1982.49 466.168 1983.63 C 444.21 1985.38 419.963 1984.67 398.118 1984.7 L 335.675 1984.72 C 291.339 1984.71 281.14 1988.61 252.966 1950.61 C 231.817 1949.9 217.71 1949.59 202.03 1932.27 C 172.198 1899.33 153.081 1837.09 142.452 1794.2 C 113.612 1677.82 98.776 1550.69 90.0715 1431.26 C 77.6172 1255.37 75.0586 1078.92 82.4079 902.747 C 87.6206 773.449 114.281 348.26 206.654 263.044 C 220.536 250.238 235.034 250.024 252.782 249.411 C 283.104 211.818 286.699 215.475 333.611 215.402 L 395.654 215.348 C 413.716 215.344 432.574 215.576 450.567 215.401 C 475.253 215.162 482.772 221.07 498.684 238.188 z"/>
@@ -1051,13 +1209,12 @@
 <path transform="translate(0,0)" fill="rgb(117,117,113)" d="M 546.247 378.21 C 544.974 374.407 542.808 368.201 543.417 364.45 C 546.337 366.898 547.362 372.154 548.314 376.041 L 546.247 378.21 z"/>
 <path transform="translate(0,0)" fill="rgb(77,75,71)" d="M 333.156 1914.92 C 333.258 1915.16 333.44 1915.38 333.462 1915.63 C 333.746 1919.03 328.546 1924.92 326.569 1927.78 C 325.969 1927.19 325.459 1926.11 325.015 1925.38 C 326.549 1921.42 330.326 1918.05 333.156 1914.92 z"/>
 </svg>
+          </div>
         </div>
+        <div class="schema-legend" id="schema-legend"></div>
       </div>
-      <!-- Étiquettes en dessous -->
-      <div class="anno-labels-bottom" id="anno-bottom"></div>
-      <!-- Légende commandes actives -->
-      <div class="schema-legend" id="schema-legend"></div>
-    </div>
+
+    </div><!-- /sheet-body -->
   </div>
 </div>
 
@@ -1381,6 +1538,23 @@ function switchView(v){
   setTimeout(positionAnnotations, 60);
 }
 
+
+function switchDrawerTab(tab){
+  currentDrawerTab=tab;
+  ['controls','screen','schema'].forEach(t=>{
+    document.getElementById('dtab-'+t)?.classList.toggle('active',t===tab);
+    document.getElementById('svt-'+t)?.classList.toggle('active',t===tab);
+  });
+  if(tab==='schema') setTimeout(positionAnnotations,80);
+}
+
+function switchScreenTab(tab){
+  ['info','liveview'].forEach(t=>{
+    document.getElementById('stab-'+t)?.classList.toggle('active',t===tab);
+    document.getElementById('sst-'+t)?.classList.toggle('active',t===tab);
+  });
+}
+
 function refreshSchema(){
   if(!currentPopupPreset)return;
   const{params}=resolveParams(currentPopupPreset,currentPopupCondIdx);
@@ -1388,140 +1562,206 @@ function refreshSchema(){
   const condName=currentPopupCondIdx!==null
     ?currentPopupPreset.conditions[currentPopupCondIdx]?.name
     :'Réglages par défaut';
-  document.getElementById('sheet-subtitle').textContent=`${currentPopupPreset.icon} ${currentPopupPreset.name} — ${condName}`;
+  document.getElementById('sheet-subtitle').textContent=
+    `${currentPopupPreset.icon} ${currentPopupPreset.name} — ${condName}`;
   currentAnnotations={front,back,lens};
-  // Vue automatique : la plus pertinente
-  const best=bestView(front,back,lens);
-  switchView(best);
-  // Légende
+
+  // ── LCD ──
+  updateLCD(params,condName);
+
+  // ── Mini-cartes ──
+  buildControlCards(params);
+
+  // ── Légende schéma ──
   const allLabels=labels.length?labels:[{param:'',label:'Aucune commande spécifique'}];
   document.getElementById('schema-legend').innerHTML=`
     <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);width:100%;margin-bottom:6px">Commandes concernées</div>
-    ${allLabels.map(l=>`
-      <div class="leg-item">
-        <div class="leg-dot ${l.param?'leg-active':'leg-inactive'}"></div>
-        <span>${l.param?`<strong>${l.param}</strong> → `:''}${l.label}</span>
-      </div>`).join('')}`;
-  if(document.getElementById('sheet-overlay').classList.contains('open')){
-    setTimeout(positionAnnotations, 80);
+    ${allLabels.map(l=>`<div class="leg-item"><div class="leg-dot ${l.param?'leg-active':'leg-inactive'}"></div><span>${l.param?`<strong>${l.param}</strong> → `:''}${l.label}</span></div>`).join('')}`;
+
+  // Vue auto pour l'onglet schéma
+  const best=bestView(front,back,lens);
+  switchView(best);
+
+  if(document.getElementById('sheet-overlay').classList.contains('open')&&currentDrawerTab==='schema'){
+    setTimeout(positionAnnotations,80);
   }
 }
 
-// ── Dessine les annotations style schéma technique ──
-// Principe : points sur le visuel + traits à coude vers étiquettes
-// regroupées dans des bandeaux au-dessus et en dessous
+// ── Mise à jour de l'écran LCD ──
+function updateLCD(params,condName){
+  const p=currentPopupPreset;
+  function get(key,fb='—'){return params[key]?.value||fb;}
+  // ── Écran Info ──
+  const pn=document.getElementById('lcd-preset-name');
+  if(pn) pn.textContent=p.icon+' '+p.name;
+  const cd=document.getElementById('lcd-cond');
+  if(cd) cd.textContent=condName!=='Réglages par défaut'?'['+condName+']':'';
+  function setVal(elId,key,fb='—'){
+    const el=document.getElementById(elId);if(!el)return;
+    el.textContent=get(key,fb);
+    el.classList.toggle('active',!!params[key]);
+  }
+  setVal('lcd-av','Ouverture');setVal('lcd-tv','Vitesse');setVal('lcd-iso','ISO');
+  setVal('lcd-wb','Balance des blancs');setVal('lcd-metering','Mode mesure');
+  setVal('lcd-af','Mise au point');setVal('lcd-drive','Mode rafale');
+  setVal('lcd-focal','Focale');setVal('lcd-format','Format','RAW');
+  ['wb','metering','af','drive'].forEach(k=>{
+    const map={wb:'Balance des blancs',metering:'Mode mesure',af:'Mise au point',drive:'Mode rafale'};
+    const el=document.getElementById('lcd-'+k+'-blk');
+    if(el) el.style.opacity=params[map[k]]?'1':'.3';
+  });
+  // ── Live View ──
+  const lv={av:'Ouverture',tv:'Vitesse',iso:'ISO'};
+  Object.entries(lv).forEach(([id,key])=>{
+    const el=document.getElementById('lv-'+id);
+    if(el) el.textContent=get(key,'—');
+  });
+  const wb=document.getElementById('lv-wb'); if(wb) wb.textContent='WB '+get('Balance des blancs','—');
+  const af=document.getElementById('lv-af'); if(af) af.textContent='AF '+get('Mise au point','—').split(' ')[0];
+  const dr=document.getElementById('lv-drive'); if(dr) dr.textContent='□ '+get('Mode rafale','—');
+  const fm=document.getElementById('lv-format'); if(fm) fm.textContent=get('Format','RAW');
+  // Histogramme décoratif
+  drawHistogram(params);
+}
+
+function drawHistogram(params){
+  const svg=document.getElementById('lv-histo-svg');if(!svg)return;
+  svg.innerHTML='';
+  // Générer des barres fictives dont la forme évoque l'exposition
+  const hasISO=!!params['ISO'],hasAv=!!params['Ouverture'],hasTv=!!params['Vitesse'];
+  const bars=20;const W=80,H=30;
+  // Profil gaussien décalé selon exposition estimée
+  const center=hasAv?38:hasISO?42:30;
+  for(let i=0;i<bars;i++){
+    const x=i*(W/bars);const bw=(W/bars)-1;
+    const d=i*(W/bars)+bw/2-center;
+    const h=Math.max(2,H*Math.exp(-d*d/200)*(.7+Math.random()*.3));
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x);rect.setAttribute('y',H-h);
+    rect.setAttribute('width',bw);rect.setAttribute('height',h);
+    rect.setAttribute('fill','rgba(255,255,255,.55)');
+    svg.appendChild(rect);
+  }
+}
+
+// ── Construction des mini-cartes ──
+function buildControlCards(params){
+  const container=document.getElementById('control-cards');
+  if(!container)return;
+  container.innerHTML='';
+
+  const entries=Object.entries(params).filter(([k])=>k!=='Lieu');
+  if(!entries.length){
+    container.innerHTML='<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:.9rem;">Aucune commande spécifique.</div>';
+    return;
+  }
+
+  entries.forEach(([paramName,pval])=>{
+    const cat=PARAM_CATEGORY[paramName]||'misc';
+    const icon=CAT_ICON[cat]||'◈';
+    const action=PARAM_ACTION[paramName]||'—';
+    const hw=PARAM_HW[paramName]||'';
+
+    const card=document.createElement('div');
+    card.className=`ctrl-card cat-${cat}`;
+    card.innerHTML=`
+      <div class="ctrl-card-icon">${icon}</div>
+      <div class="ctrl-card-body">
+        <div class="ctrl-card-name">${paramName}</div>
+        <div class="ctrl-card-value">${pval.value}</div>
+        ${pval.note?`<div class="ctrl-card-action">ℹ ${pval.note}</div>`:''}
+        <div class="ctrl-card-action">${action}</div>
+        <div class="ctrl-card-hw">${hw}</div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  viewBox de référence pour chaque vue
+// ═══════════════════════════════════════════
 function positionAnnotations(){
   const viewWrapId=currentView==='front'?'svg-real-wrap':currentView==='back'?'svg-back-wrap':'svg-lens-wrap';
   const wrap=document.getElementById(viewWrapId);
   if(!wrap)return;
-
-  // Nettoyer
   ['svg-real-wrap','svg-back-wrap','svg-lens-wrap'].forEach(id=>{
     document.getElementById(id)?.querySelectorAll('.anno-overlay-svg').forEach(e=>e.remove());
   });
-  document.getElementById('anno-top').innerHTML='';
-  document.getElementById('anno-bottom').innerHTML='';
-
   const activeIds=currentAnnotations[currentView]||[];
   const active=activeIds.filter(id=>CONTROL_COORDS[id]&&CONTROL_COORDS[id].view===currentView);
   if(!active.length)return;
-
-  const wW=wrap.offsetWidth, wH=wrap.offsetHeight;
-  if(!wW||!wH)return;
-
   const isDark=document.documentElement.getAttribute('data-theme')!=='light';
-  const col=isDark?'#e8c97a':'#7a5c18';
-
+  const catCols=isDark?CAT_COL_DARK:CAT_COL_LIGHT;
+  const vb=VIEW_VIEWBOX[currentView];
+  const VBW=vb.w,VBH=vb.h;
+  const VBY0=-VB_MARGIN_TOP,VBH2=VBH+VB_MARGIN_TOP+VB_MARGIN_BOT;
   const topIds=active.filter(id=>CONTROL_COORDS[id].slot==='top');
   const botIds=active.filter(id=>CONTROL_COORDS[id].slot==='bottom');
-
-  // ── SVG overlay : couvre wrap + zones étiquettes au-dessus et en dessous ──
-  // On étend le SVG verticalement pour englober les bandeaux étiquettes
-  const BAND=40; // hauteur px du bandeau étiquettes (haut et bas)
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('class','anno-overlay-svg');
-  // Le SVG commence BAND px au-dessus du wrap et finit BAND px en dessous
-  svg.setAttribute('style',
-    `position:absolute;left:0;top:-${BAND}px;width:${wW}px;height:${wH+BAND*2}px;`+
-    `pointer-events:none;overflow:visible;z-index:4`);
-  // viewBox aligné : y commence à -BAND
-  svg.setAttribute('viewBox',`0 -${BAND} ${wW} ${wH+BAND*2}`);
+  svg.setAttribute('viewBox',`0 ${VBY0} ${VBW} ${VBH2}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  svg.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:4');
+  wrap.style.position='relative';
   wrap.appendChild(svg);
+  function spreadVBX(ids){const n=ids.length;if(!n)return[];return ids.map((_,i)=>n===1?VBW/2:VBW*(i+1)/(n+1));}
+  const topX=spreadVBX(topIds),botX=spreadVBX(botIds);
 
-  // ── Calculer lx de chaque étiquette : réparti uniformément sur la largeur ──
-  // On répartit les étiquettes du haut uniformément, idem pour le bas
-  function spreadX(ids){
-    const n=ids.length;
-    return ids.map((_,i)=> n===1 ? wW/2 : (wW/(n+1))*(i+1) );
+  function getParamForControl(ctrlId){
+    for(const[p,ctrl] of Object.entries(PARAM_TO_CONTROLS_V2)){
+      if([...ctrl.front,...ctrl.back,...ctrl.lens].includes(ctrlId))return p;
+    }return null;
   }
-  const topX=spreadX(topIds);
-  const botX=spreadX(botIds);
 
-  // ── Créer les étiquettes HTML positionnées absolument dans anno-top/bottom ──
-  // On abandonne les divs flexbox et on positionne chaque label via left% absolu
-  const annoTop=document.getElementById('anno-top');
-  const annoBt =document.getElementById('anno-bottom');
-  // Passer en position relative pour pouvoir positionner absolument les enfants
-  annoTop.style.cssText='position:relative;height:'+BAND+'px;margin:0;padding:0;';
-  annoBt.style.cssText ='position:relative;height:'+BAND+'px;margin:0;padding:0;';
-
-  function makeLabel(container, id, cx){
-    const lbl=document.createElement('span');
-    lbl.className='anno-lbl';
-    lbl.textContent=CONTROL_COORDS[id].label;
-    lbl.style.cssText=
-      `position:absolute;transform:translateX(-50%);`+
-      `left:${cx}px;top:4px;white-space:nowrap;font-size:9px;`;
-    container.appendChild(lbl);
-  }
-  topIds.forEach((id,i)=>makeLabel(annoTop,id,topX[i]));
-  botIds.forEach((id,i)=>makeLabel(annoBt, id,botX[i]));
-
-  // ── Dessiner points + traits dans le SVG ──
-  function drawLeader(id, cx, fromTop){
+  function drawAnnotation(id,lblX,fromTop){
     const coord=CONTROL_COORDS[id];
-    const px=(coord.x/100)*wW;
-    const py=(coord.y/100)*wH;
-
-    // Point pulsant sur le composant
-    const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    circ.setAttribute('cx',px);circ.setAttribute('cy',py);circ.setAttribute('r',5);
-    circ.setAttribute('fill',col);circ.setAttribute('class','dot-active');
-    svg.appendChild(circ);
-    // Anneau externe
-    const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    ring.setAttribute('cx',px);ring.setAttribute('cy',py);ring.setAttribute('r',9);
-    ring.setAttribute('fill','none');ring.setAttribute('stroke',col);
-    ring.setAttribute('stroke-width','1.5');ring.setAttribute('opacity','.45');
-    svg.appendChild(ring);
-
-    // Trait à coude : point → bord du visuel → étiquette
-    // ly : point de connexion côté étiquette (dans le bandeau, à mi-hauteur)
-    const ly = fromTop ? -(BAND/2) : wH+(BAND/2);
-    // Coude intermédiaire au bord du visuel
-    const midY = fromTop ? 0 : wH;
-    const path=`M ${px} ${py} L ${px} ${midY} L ${cx} ${midY} L ${cx} ${ly}`;
+    const px=(coord.x/100)*VBW,py=(coord.y/100)*VBH;
+    const paramName=getParamForControl(id);
+    const cat=PARAM_CATEGORY[paramName]||'misc';
+    const col=catCols[cat]||catCols.misc;
+    const label=coord.label;
+    const txtW=Math.max(label.length*LBL_FONT*0.52,120);
+    const lblW=txtW+LBL_PAD_X*2;
+    const lblX0=Math.max(10,Math.min(VBW-lblW-10,lblX-lblW/2));
+    const lblCX=lblX0+lblW/2;
+    const lblY0=fromTop?VBY0+20:VBH+VB_MARGIN_BOT-LBL_H-20;
+    const lblCY=lblY0+LBL_H/2;
+    // Fond étiquette
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',lblX0);rect.setAttribute('y',lblY0);rect.setAttribute('width',lblW);rect.setAttribute('height',LBL_H);
+    rect.setAttribute('rx',LBL_CORNER);rect.setAttribute('fill',isDark?'rgba(10,12,16,.9)':'rgba(250,248,244,.93)');
+    rect.setAttribute('stroke',col);rect.setAttribute('stroke-width','4');
+    svg.appendChild(rect);
+    // Texte
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',lblX0+lblW/2);txt.setAttribute('y',lblCY+LBL_FONT*0.38);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('font-family','Inter,system-ui,sans-serif');
+    txt.setAttribute('font-size',LBL_FONT);txt.setAttribute('font-weight','700');
+    txt.setAttribute('fill',col);
+    txt.textContent=label;
+    svg.appendChild(txt);
+    // Trait
+    const midY=fromTop?-VB_MARGIN_TOP/2:VBH+VB_MARGIN_BOT/2;
+    const tStartY=fromTop?lblY0+LBL_H:lblY0;
     const line=document.createElementNS('http://www.w3.org/2000/svg','path');
-    line.setAttribute('d',path);
-    line.setAttribute('fill','none');
-    line.setAttribute('stroke',col);
-    line.setAttribute('stroke-width','1.5');
-    line.setAttribute('stroke-dasharray','5 3');
-    line.setAttribute('opacity','.8');
+    line.setAttribute('d',`M ${lblCX} ${tStartY} L ${lblCX} ${midY} L ${px} ${midY} L ${px} ${py}`);
+    line.setAttribute('fill','none');line.setAttribute('stroke',col);
+    line.setAttribute('stroke-width','4');line.setAttribute('stroke-dasharray','10 6');
+    line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.7');
     svg.appendChild(line);
-
-    // Petit trait terminal vertical dans le bandeau
-    const term=document.createElementNS('http://www.w3.org/2000/svg','line');
-    const ty1=fromTop? -(BAND-4) : wH+4;
-    const ty2=fromTop? -4 : wH+(BAND-4);
-    term.setAttribute('x1',cx);term.setAttribute('y1',ty1);
-    term.setAttribute('x2',cx);term.setAttribute('y2',ty2);
-    term.setAttribute('stroke',col);term.setAttribute('stroke-width','1.5');term.setAttribute('opacity','.5');
-    svg.appendChild(term);
+    // Point
+    const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ring.setAttribute('cx',px);ring.setAttribute('cy',py);ring.setAttribute('r',22);
+    ring.setAttribute('fill','none');ring.setAttribute('stroke',col);ring.setAttribute('stroke-width','5');ring.setAttribute('opacity','.4');
+    svg.appendChild(ring);
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);dot.setAttribute('r',13);
+    dot.setAttribute('fill',col);dot.setAttribute('class','dot-active');
+    svg.appendChild(dot);
   }
-
-  topIds.forEach((id,i)=>drawLeader(id,topX[i],true));
-  botIds.forEach((id,i)=>drawLeader(id,botX[i],false));
+  topIds.forEach((id,i)=>drawAnnotation(id,topX[i],true));
+  botIds.forEach((id,i)=>drawAnnotation(id,botX[i],false));
 }
 function handleSheetOverlayClick(e){
   if(e.target===document.getElementById('sheet-overlay'))closeSheet();
