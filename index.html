@@ -315,6 +315,16 @@
     .lv-histo{position:absolute;right:8px;top:50%;transform:translateY(-50%);
       background:rgba(0,0,0,.5);border-radius:4px;padding:2px 4px}
 
+    /* ── Bouton expand drawer ── */
+    .sheet-expand{
+      background:none;border:1px solid var(--border);color:var(--text-dim);
+      border-radius:6px;width:30px;height:30px;display:flex;align-items:center;
+      justify-content:center;cursor:pointer;font-size:1rem;margin-right:6px;
+      transition:all .2s;flex-shrink:0;
+    }
+    .sheet-expand:hover{border-color:var(--gold);color:var(--gold)}
+    /* Drawer élargi (mode ZFold déplié) */
+    .bottom-sheet.expanded{width:min(98vw,720px)!important}
     /* Légende */
     .schema-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
     .leg-item{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--tip-text)}
@@ -477,10 +487,11 @@
       <div class="sheet-handle" onclick="closeSheet()">📷 Boîtier</div>
     </div>
     <div class="sheet-header">
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="sheet-title">Fujifilm X-S20</div>
         <div class="sheet-subtitle" id="sheet-subtitle">Réglages par défaut</div>
       </div>
+      <button class="sheet-expand" id="sheet-expand" onclick="toggleExpand()" title="Agrandir">⤢</button>
       <button class="sheet-close" onclick="closeSheet()">✕</button>
     </div>
     <!-- ═══ NOUVEAU DRAWER : LCD + MINI-CARTES + SCHÉMA ═══ -->
@@ -1451,11 +1462,11 @@ document.getElementById('popup-overlay').addEventListener('click',e=>{
 //  BOTTOM SHEET SCHÉMA
 // ═══════════════════════════════════════════
 function openSheet(){
-  // Ouvrir le drawer EN PREMIER, avant tout calcul
   const overlay=document.getElementById('sheet-overlay');
   if(!overlay)return;
   overlay.classList.add('open');
-  // Puis remplir le contenu si on a un preset
+  // Cacher l'onglet Boîtier (drawer ouvert = onglet intégré visible)
+  document.getElementById('schema-tab')?.classList.remove('visible');
   if(currentPopupPreset){
     try{refreshSchema();}catch(e){console.warn('[openSheet]',e);}
     setTimeout(()=>{
@@ -1463,7 +1474,13 @@ function openSheet(){
     },120);
   }
 }
-function closeSheet(){document.getElementById('sheet-overlay').classList.remove('open');}
+function closeSheet(){
+  document.getElementById('sheet-overlay').classList.remove('open');
+  // Réafficher l'onglet Boîtier si popup encore ouvert
+  if(document.getElementById('popup-overlay').classList.contains('open')){
+    document.getElementById('schema-tab')?.classList.add('visible');
+  }
+}
 
 // ═══════════════════════════════════════════
 //  ANNOTATIONS — coords en % sur viewBox 2048×1365
@@ -1495,6 +1512,50 @@ const CONTROL_COORDS={
   'switch-ois'    :{view:'lens',  x:22,  y:25, label:'Switch OIS',        slot:'top'},
   'switch-af-mf'  :{view:'lens',  x:35,  y:25, label:'Switch AF/MF',      slot:'top'},
 };
+
+// ═══════════════════════════════════════════
+//  CATÉGORIES ET ACTIONS DES COMMANDES
+// ═══════════════════════════════════════════
+const PARAM_CATEGORY={
+  'Ouverture':'expo','Vitesse':'expo','ISO':'expo',
+  'Mise au point':'focus','Focale':'focus',
+  'Balance des blancs':'wb','Mode mesure':'wb',
+  'Mode rafale':'drive','Déclencheur':'drive','Format':'drive','Durée totale':'drive',
+  'Filtre':'misc','Lieu':'misc',
+};
+const CAT_ICON={expo:'⊙',focus:'◎',wb:'☀',drive:'▶',misc:'◈'};
+const PARAM_ACTION={
+  'Ouverture':'↻ Bague ouverture + molette avant',
+  'Vitesse':'↻ Molette vitesse (dessus)',
+  'ISO':'↻ Molette ISO (dessus)',
+  'Mise au point':'⇄ Levier AF/MF + ⊙ Bouton AF-L',
+  'Focale':'↻ Bague zoom objectif',
+  'Balance des blancs':'⊙ Bouton Q → sélectionner WB',
+  'Mode mesure':'⊙ Bouton Q → mode mesure',
+  'Mode rafale':'↻ Molette Drive (dessus)',
+  'Déclencheur':'⊙ Demi-course → MAP · Pleine course → déclencher',
+  'Format':'⊙ Bouton Q → Format image',
+  'Filtre':"↻ Bague ouverture · Accessoire à visser",
+  'Lieu':'ℹ Choisir un site à faible pollution lumineuse',
+  'Durée totale':"⚙ Régler l'intervalomètre dans le menu",
+};
+const PARAM_HW={
+  'Ouverture':'Bague objectif + molette front',
+  'Vitesse':'Molette SS (dessus gauche)',
+  'ISO':'Molette ISO (dessus centre)',
+  'Mise au point':'Levier AF/MF objectif',
+  'Focale':'Bague zoom objectif',
+  'Balance des blancs':'Bouton Q → WB',
+  'Mode mesure':'Bouton Q → Metering',
+  'Mode rafale':'Molette Drive (dessus droite)',
+  'Déclencheur':'Bouton déclencheur (dessus)',
+  'Format':'Menu Q → RAW / JPEG',
+  'Filtre':"Accessoire fixé sur l'objectif",
+  'Lieu':'Information externe',
+  'Durée totale':'Menu intervalomètre',
+};
+const CAT_COL_DARK= {expo:'#e05050',focus:'#4090e0',wb:'#e0c040',drive:'#40c080',misc:'#c080e0'};
+const CAT_COL_LIGHT={expo:'#c02020',focus:'#1060c0',wb:'#806010',drive:'#208050',misc:'#8040b0'};
 
 // Mapping param → contrôles (mis à jour pour inclure arrière + objectif)
 const PARAM_TO_CONTROLS_V2={
@@ -1553,6 +1614,15 @@ function switchDrawerTab(tab){
     document.getElementById('svt-'+t)?.classList.toggle('active',t===tab);
   });
   if(tab==='schema') setTimeout(positionAnnotations,80);
+}
+
+function toggleExpand(){
+  const sheet=document.getElementById('bottom-sheet');
+  const btn=document.getElementById('sheet-expand');
+  const expanded=sheet.classList.toggle('expanded');
+  if(btn) btn.textContent=expanded?'⤡':'⤢';
+  // Repositionner les annotations si schéma visible
+  if(currentDrawerTab==='schema') setTimeout(positionAnnotations,100);
 }
 
 function switchScreenTab(tab){
