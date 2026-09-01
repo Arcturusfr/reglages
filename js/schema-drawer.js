@@ -206,8 +206,6 @@ const LBL_H          = 52;  // hauteur d'une étiquette (unités vb)
 const LBL_PAD_X      = 20;  // padding horizontal étiquette
 const LBL_FONT       = 36;  // taille police étiquette
 const LBL_CORNER     = 12;  // rayon coin arrondi
-
-
 function positionAnnotations(){
   const viewWrapId=currentView==='front'?'svg-real-wrap':currentView==='back'?'svg-back-wrap':'svg-lens-wrap';
   const wrap=document.getElementById(viewWrapId);
