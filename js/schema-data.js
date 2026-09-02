@@ -134,4 +134,12 @@ const PARAM_HW={
 const CAT_COL_DARK= {expo:'#e05050',focus:'#4090e0',wb:'#e0c040',drive:'#40c080',misc:'#c080e0'};
 const CAT_COL_LIGHT={expo:'#c02020',focus:'#1060c0',wb:'#806010',drive:'#208050',misc:'#8040b0'};
 
+// ═══════════════════════════════════════════
+//  PALETTE D'ANNOTATION — une couleur distincte par PARAMÈTRE actif
+//  (et non par catégorie) pour garantir un maximum de contraste visuel
+//  entre étiquettes simultanément affichées sur le schéma.
+// ═══════════════════════════════════════════
+const LABEL_PALETTE_DARK=['#e05050','#4090e0','#e0c040','#40c080','#c080e0','#e0783c','#2cc4b0','#c04ea0','#9ab52e','#5a7ce0'];
+const LABEL_PALETTE_LIGHT=['#c02020','#1060c0','#806010','#208050','#8040b0','#a0480c','#0a8570','#8a1a68','#6a7c10','#2c46b0'];
+
 // Mapping param → contrôles (mis à jour pour inclure arrière + objectif)

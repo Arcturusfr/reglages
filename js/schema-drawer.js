@@ -1,6 +1,21 @@
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
+let currentDrawerTab='controls'; // onglet actif par défaut, cf. classe "active" sur #dtab-controls dans le HTML
+
+// ── Couleur par paramètre (et non par catégorie) — partagée entre la légende
+// texte et le schéma annoté, pour un rendu visuellement cohérent et diversifié.
+function getActiveParamOrder(params){
+  return Object.keys(params||{}).filter(p=>{
+    const entry=PARAM_TO_CONTROLS_V3.M[p];
+    return entry&&CONTROL_SEQUENCES[entry.sequence];
+  });
+}
+function colorForParamName(paramName,order,isDark){
+  const palette=isDark?LABEL_PALETTE_DARK:LABEL_PALETTE_LIGHT;
+  const idx=order.indexOf(paramName);
+  return palette[Math.max(0,idx)%palette.length];
+}
 
 function getActiveControlsByView(params){
   const byView={front:new Set(),back:new Set(),lens:new Set()};
@@ -89,9 +104,14 @@ function refreshSchema(){
   // ── Légende schéma ──
   const allLabels=describeActiveSequences(params);
   const legendItems=allLabels.length?allLabels:[{param:'',label:'Aucune commande spécifique'}];
+  const isDarkNow=document.documentElement.getAttribute('data-theme')!=='light';
+  const legendParamOrder=getActiveParamOrder(params);
   document.getElementById('schema-legend').innerHTML=`
     <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);width:100%;margin-bottom:6px">Commandes concernées</div>
-    ${legendItems.map(l=>`<div class="leg-item"><div class="leg-dot ${l.param?'leg-active':'leg-inactive'}"></div><span>${l.param?`<strong>${l.param}</strong> → `:''}${l.label}</span></div>`).join('')}`;
+    ${legendItems.map(l=>{
+      const dotStyle=l.param?`background:${colorForParamName(l.param,legendParamOrder,isDarkNow)};box-shadow:0 0 6px ${colorForParamName(l.param,legendParamOrder,isDarkNow)}88`:'';
+      return `<div class="leg-item"><div class="leg-dot ${l.param?'':'leg-inactive'}" style="${dotStyle}"></div><span>${l.param?`<strong>${l.param}</strong> → `:''}${l.label}</span></div>`;
+    }).join('')}`;
   // Vue auto pour l'onglet schéma
   const best=bestView(front,back,lens);
   switchView(best);
@@ -200,36 +220,70 @@ const VIEW_VIEWBOX={
   lens: {w:2120,h:2120},
 };
 // Marges internes (en unités viewBox) pour les étiquettes
-const VB_MARGIN_TOP  = 180; // espace au-dessus du visuel pour les étiquettes haut
-const VB_MARGIN_BOT  = 180; // espace en dessous pour les étiquettes bas
-const LBL_H          = 52;  // hauteur d'une étiquette (unités vb)
-const LBL_PAD_X      = 20;  // padding horizontal étiquette
-const LBL_FONT       = 36;  // taille police étiquette
-const LBL_CORNER     = 12;  // rayon coin arrondi
+const VB_MARGIN_TOP  = 300; // espace au-dessus du visuel pour les étiquettes haut
+const VB_MARGIN_BOT  = 300; // espace en dessous pour les étiquettes bas
+const LBL_H          = 74;  // hauteur d'une étiquette (unités vb)
+const LBL_PAD_X      = 26;  // padding horizontal étiquette
+const LBL_FONT       = 54;  // taille police étiquette
+const LBL_CORNER     = 14;  // rayon coin arrondi
+const LBL_TIER_GAP   = 34;  // écart vertical entre étages de lignes pour éviter les chevauchements
 function positionAnnotations(){
   const viewWrapId=currentView==='front'?'svg-real-wrap':currentView==='back'?'svg-back-wrap':'svg-lens-wrap';
   const wrap=document.getElementById(viewWrapId);
   if(!wrap)return;
   ['svg-real-wrap','svg-back-wrap','svg-lens-wrap'].forEach(id=>{
-    document.getElementById(id)?.querySelectorAll('.anno-overlay-svg').forEach(e=>e.remove());
+    const w=document.getElementById(id);
+    if(!w)return;
+    w.querySelectorAll('.anno-overlay-svg').forEach(e=>e.remove());
+    if(w._annoResizeObserver){w._annoResizeObserver.disconnect();w._annoResizeObserver=null;}
   });
   const activeIds=currentAnnotations[currentView]||[];
   const active=activeIds.filter(id=>CONTROL_COORDS[id]&&CONTROL_COORDS[id].view===currentView);
   if(!active.length)return;
   const isDark=document.documentElement.getAttribute('data-theme')!=='light';
-  const catCols=isDark?CAT_COL_DARK:CAT_COL_LIGHT;
   const vb=VIEW_VIEWBOX[currentView];
   const VBW=vb.w,VBH=vb.h;
   const VBY0=-VB_MARGIN_TOP,VBH2=VBH+VB_MARGIN_TOP+VB_MARGIN_BOT;
   const topIds=active.filter(id=>CONTROL_COORDS[id].slot==='top');
   const botIds=active.filter(id=>CONTROL_COORDS[id].slot==='bottom');
+  const realSvg=wrap.querySelector('svg');
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('class','anno-overlay-svg');
   svg.setAttribute('viewBox',`0 ${VBY0} ${VBW} ${VBH2}`);
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-  svg.setAttribute('style','position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:4');
   wrap.style.position='relative';
   wrap.appendChild(svg);
+  // ── Alignement pixel-perfect ──
+  // Le viewBox du calque est plus HAUT que celui de l'image réelle (il inclut les
+  // marges pour les étiquettes en haut/bas). Si on se contente de width:100%/height:100%
+  // sur le calque, son "meet" le fait rentrer dans le cadre de l'image (proportions
+  // différentes) → tout le contenu se retrouve compressé et recentré, désaligné des
+  // vrais boutons. On calcule donc explicitement la taille et la position du calque
+  // en pixels, à partir du rendu réel de l'image, pour que l'échelle soit identique.
+  function syncOverlayGeometry(){
+    if(!realSvg)return;
+    const wrapRect=wrap.getBoundingClientRect();
+    const imgRect=realSvg.getBoundingClientRect();
+    if(!imgRect.width)return;
+    const scale=imgRect.width/VBW;
+    svg.setAttribute('style',
+      `position:absolute;pointer-events:none;overflow:visible;z-index:4;`+
+      `left:${imgRect.left-wrapRect.left}px;`+
+      `top:${(imgRect.top-wrapRect.top)-VB_MARGIN_TOP*scale}px;`+
+      `width:${imgRect.width}px;`+
+      `height:${VBH2*scale}px;`);
+    // Réserve de l'espace vertical autour du cadre pour que les étiquettes qui
+    // débordent (au-dessus/en-dessous, cf. overflow:visible sur .svg-wrap) ne
+    // chevauchent pas les éléments voisins (onglets, légende...).
+    wrap.style.marginTop=(VB_MARGIN_TOP*scale+16)+'px';
+    wrap.style.marginBottom=(VB_MARGIN_BOT*scale+16)+'px';
+  }
+  syncOverlayGeometry();
+  if(window.ResizeObserver){
+    const ro=new ResizeObserver(()=>syncOverlayGeometry());
+    ro.observe(wrap);
+    wrap._annoResizeObserver=ro;
+  }
   function spreadVBX(ids){const n=ids.length;if(!n)return[];return ids.map((_,i)=>n===1?VBW/2:VBW*(i+1)/(n+1));}
   const topX=spreadVBX(topIds),botX=spreadVBX(botIds);
 
@@ -242,16 +296,21 @@ function positionAnnotations(){
     }
     return null;
   }
-  
-  function drawAnnotation(id,lblX,fromTop){
+
+  // Ordre stable des paramètres actifs → une couleur de palette par paramètre
+  // (et non par catégorie), pour un contraste maximal entre étiquettes visibles
+  // simultanément, même si plusieurs partagent la même catégorie (ex. Ouverture/ISO/Vitesse).
+  const activeParamOrder=getActiveParamOrder(currentAnnotations.paramsSnapshot);
+  function colorForParam(paramName){return colorForParamName(paramName,activeParamOrder,isDark);}
+
+  function drawAnnotation(id,lblX,fromTop,tierIdx,tierCount){
     const coord=CONTROL_COORDS[id];
     const svgRoot=wrap.querySelector('svg');
     const anchor=svgRoot?.querySelector('#anchor-'+id);
     const px=anchor?parseFloat(anchor.getAttribute('cx')):(coord.x/100)*VBW;
     const py=anchor?parseFloat(anchor.getAttribute('cy')):(coord.y/100)*VBH;
     const paramName=getParamForControl(id);
-    const cat=PARAM_CATEGORY[paramName]||'misc';
-    const col=catCols[cat]||catCols.misc;
+    const col=colorForParam(paramName);
     const label=coord.label;
     const txtW=Math.max(label.length*LBL_FONT*0.52,120);
     const lblW=txtW+LBL_PAD_X*2;
@@ -274,14 +333,16 @@ function positionAnnotations(){
     txt.setAttribute('fill',col);
     txt.textContent=label;
     svg.appendChild(txt);
-    // Trait
-    const midY=fromTop?-VB_MARGIN_TOP/2:VBH+VB_MARGIN_BOT/2;
+    // Trait — chaque étiquette a son propre "étage" horizontal (tier) pour que
+    // les lignes ne se superposent jamais, même si elles se croisent.
+    const tierBase=fromTop?(VBY0+20+LBL_H+22):(VBH+22);
+    const midY=tierBase+(tierIdx||0)*LBL_TIER_GAP;
     const tStartY=fromTop?lblY0+LBL_H:lblY0;
     const line=document.createElementNS('http://www.w3.org/2000/svg','path');
     line.setAttribute('d',`M ${lblCX} ${tStartY} L ${lblCX} ${midY} L ${px} ${midY} L ${px} ${py}`);
     line.setAttribute('fill','none');line.setAttribute('stroke',col);
     line.setAttribute('stroke-width','4');line.setAttribute('stroke-dasharray','10 6');
-    line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.7');
+    line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.75');
     svg.appendChild(line);
     // Point
     const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -293,6 +354,6 @@ function positionAnnotations(){
     dot.setAttribute('fill',col);dot.setAttribute('class','dot-active');
     svg.appendChild(dot);
   }
-  topIds.forEach((id,i)=>drawAnnotation(id,topX[i],true));
-  botIds.forEach((id,i)=>drawAnnotation(id,botX[i],false));
+  topIds.forEach((id,i)=>drawAnnotation(id,topX[i],true,i,topIds.length));
+  botIds.forEach((id,i)=>drawAnnotation(id,botX[i],false,i,botIds.length));
 }
