@@ -180,7 +180,7 @@
     .sheet-body{padding:14px 16px 20px;flex:1;overflow-y:auto}
 
     /* SVG wrapper */
-    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:hidden;position:relative}
+    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:visible;position:relative;max-width:50%;margin:0 auto}
     [data-theme="light"] .svg-wrap{background:rgba(0,0,0,.03)}
     .svg-wrap svg{width:100%;height:auto;display:block}
     /* Points d'annotation animés sur le SVG */
