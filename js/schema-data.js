@@ -1,3 +1,4 @@
+// 2026-09-03 15:53 (Paris) — V013 — Commentaire vue arrière mis à jour (nouveau viewBox 1536×864, FaceArr_vector.svg) — CONTROL_COORDS.back toujours en % (repli, non ancré)
 // SCHEMA DATA — coordonnées des contrôles, catégories, actions, matériel (vue caméra annotée)
 // Coordonnées par vue (% du viewBox)
 // Coordonnées par vue (% du viewBox) — utilisées en repli tant qu'une vue
@@ -9,7 +10,7 @@ const CONTROL_COORDS={
   'btn-shutter'   :{view:'front', x:19.73, y:19.93, label:'Déclencheur',      slot:'top'},
   'btn-q'         :{view:'front', x:19.14, y:13.12, label:'Bouton Q',         slot:'top'},
   'dial-top-front':{view:'front', x:15.99, y:33.26, label:'Molette avant',    slot:'bottom'},
-  // ── Vue ARRIÈRE (viewBox 4096×2120... — à valider/ancrer en phase 2, coordonnées estimées ──
+  // ── Vue ARRIÈRE (viewBox 1536×864, FaceArr_vector.svg) — à valider/ancrer en phase 2, coordonnées estimées ──
   'btn-af-back'   :{view:'back',  x:84,  y:45, label:'Bouton AF-L',       slot:'top'},
   'dial-back'     :{view:'back',  x:75,  y:55, label:'Molette arrière',   slot:'bottom'},
   'joystick'      :{view:'back',  x:82,  y:65, label:'Joystick',          slot:'bottom'},

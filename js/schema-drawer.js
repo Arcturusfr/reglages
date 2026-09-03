@@ -1,3 +1,4 @@
+// 2026-09-03 15:53 (Paris) — V013 — VIEW_VIEWBOX.back mis à jour : {w:1536,h:864} (nouveau schéma FaceArr_vector.svg, remplace l'ancien 4096×1274)
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
@@ -216,7 +217,7 @@ function buildControlCards(params){
 // ═══════════════════════════════════════════
 const VIEW_VIEWBOX={
   front:{w:2048,h:1365},
-  back: {w:4096,h:1274},
+  back: {w:1536,h:864}, // FaceArr_vector.svg (nouveau schéma arrière)
   lens: {w:2120,h:2120},
 };
 // Marges internes (en unités viewBox) pour les étiquettes
