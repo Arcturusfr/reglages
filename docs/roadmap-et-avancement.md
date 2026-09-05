@@ -1,3 +1,5 @@
+Version 2026-09-03 23:00 (Europe/Paris)
+
 ## Où on en est
 
 Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre visuellement quels boutons/molettes actionner pour un préréglage donné). Objectif final : drawer plein écran, vue active en grand avec vignettes cliquables des autres vues, système d'ancrage précis, prévu pour accueillir plus tard un zoom animé sur chaque contrôle.
