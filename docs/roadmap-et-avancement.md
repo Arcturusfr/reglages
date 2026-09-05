@@ -19,7 +19,7 @@ Après chaque génération d'un nouveau fichier de code : intégration + test r�
 
 1. **Insérer la valeur du contrôle concerné dans chaque étiquette affichée**
 2. **Puis insérer une image du contrôle dans chaque étiquette**
-4. **Puis la vue objectif**, adaptation de l'outil editeur-ancres-vue-avant.html avec le schéma de l'objectif et les contrôles correspondants
+4. **Puis la vue objectif**, adaptation de l'outil `editeur-ancres-vue-avant.html` avec le schéma de l'objectif et les contrôles correspondants
 5. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
 6. **Puis les vignettes cliquables** en remplacement des onglets actuels.
 7. **Ajouter les horodatages + numéro de version `Vxxx`** dans les fichiers dès la prochaine livraison (exigence du projet non respectée récemment).
