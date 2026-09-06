@@ -1,10 +1,9 @@
-Version 2026-09-06 07:34 (Europe/Paris)
+Version 2026-09-06 18:33 (Europe/Paris)
 
 ## Important ##
 
 Après chaque génération d'un nouveau fichier de code : intégration + test réel via Chromium/Playwright avant livraison.
 Mettre à jour les horodatages + numéro de version `Vxxx`** en commentaire en première ligbe dans les fichiers modifiés ou créés.
-
 
 ## Où on en est
 
@@ -14,8 +13,8 @@ Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre v
 
 - ✅ **Vue avant** — entièrement migrée vers le nouveau système, ancrée nativement, testée et validée (alignement pixel-perfect, couleurs, tailles, absence de chevauchement).
 - ✅ **Vue arrière** — entièrement migrée vers le nouveau système, ancrée nativement, testée et validée (alignement pixel-perfect, couleurs, tailles, absence de chevauchement).
+- ⏳ **Enrichissement des étiquettes des contrôles** —  les valeurs des contrôles ont été intégrés dans les étiquettes, il reste à ajouter une image du contrôle.
 - ⏳ **Vue objectif** — pas encore ancrée, à faire plus tard.
-- ⏳ **Enrichissement des étiquettes des contrôles** — il faudra agrandir le cadre des étiquettes pour y intégrer les valeurs du contrôle et une image du contrôle.
 - ⏳ **Simulation LCD** — pas encore intégrée au nouveau système de vues/vignettes.
 - ⏳ **Vignettes cliquables remplaçant les onglets** — pas encore implémenté (actuellement encore des onglets classiques `svt-front/svt-lens/svt-back`).
 - ⏳ **Problèmes Firefox et Safari**, actuellement l'affichage des étiquettes fonctionne correctement dans Chrome, la correction apportée en `V014` a apporté un autre problème, on reportera la correction à plus tard, pour l'instant on considère que l'app ne fonctionne que sur Chrome.
@@ -23,14 +22,14 @@ Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre v
 Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architecture est prévue pour accueillir d'autres modes plus tard sans réécriture.
 
 ## Prochaines étapes immédiates
-
-1. **Insérer la valeur du contrôle concerné dans chaque étiquette affichée**
+1. **Réorganiser l'affichage du contenu du drawer**, mettre la liste des réglages dans une colonne à gauche, le schéma de la vue active à droite de cette colonne.
 2. **Puis insérer une image du contrôle dans chaque étiquette**
-4. **Puis la vue objectif**, adaptation de l'outil `editeur-ancres-vue-avant.html` avec le schéma de l'objectif et les contrôles correspondants
-5. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
-6. **Puis les vignettes cliquables** en remplacement des onglets actuels.
-7. **Ajouter les horodatages + numéro de version `Vxxx`** dans les fichiers dès la prochaine livraison (exigence du projet non respectée récemment).
-8. **Revoir la stratégie de cache du service worker** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
-9. **Corriger le problème d'affichage dans Firefox et Safari** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
+3. **Puis la vue objectif**, adaptation de l'outil `editeur-ancres-vue-avant.html` avec le schéma de l'objectif et les contrôles correspondants.
+4. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
+5. **Puis les vignettes cliquables** en remplacement des onglets actuels.
+6. **Ajouter les horodatages + numéro de version `Vxxx`** dans les fichiers dès la prochaine livraison (exigence du projet non respectée récemment).
+7. **Revoir la stratégie de cache du service worker** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
+8. **Corriger le problème d'affichage dans Firefox et Safari** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
+9. **Modifier les couleurs de la face arrière**, actuellement l'affichage face arrière n'est quasiment pas discernement (couleurs d'ombre sur couleur sombre).
 
 ---
