@@ -1,7 +1,3 @@
-/* 2026-09-06 (Paris) — V014 — Ajout d'un aspect-ratio CSS explicite sur les <svg> des 3 vues caméra
-   (#xs20-svg, #xs20-back-content, #xs20-lens-content), en complément de width:100%/height:auto, pour
-   garantir un rendu de ratio identique sur Blink/Gecko/WebKit. Contribue au fix du décalage des lignes
-   d'annotation entre Chrome et Firefox/Safari (voir aussi schema-drawer.js). Aucun autre changement. */
     :root,[data-theme="dark"]{
       --bg-deep:#07090d;--bg-card:#0e1118;--bg-glass:rgba(14,17,24,.93);
       --bg-param:rgba(255,255,255,.04);--bg-popup:#0e1118;
@@ -184,18 +180,9 @@
     .sheet-body{padding:14px 16px 20px;flex:1;overflow-y:auto}
 
     /* SVG wrapper */
-    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:hidden;position:relative}
+    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:visible;position:relative;max-width:50%;margin:0 auto}
     [data-theme="light"] .svg-wrap{background:rgba(0,0,0,.03)}
     .svg-wrap svg{width:100%;height:auto;display:block}
-    /* Ratio intrinsèque explicite par vue : en complément de width:100%/height:auto (dérivé du
-       viewBox), on fige le ratio via la propriété CSS aspect-ratio. Blink résolvait déjà ce ratio
-       de façon fiable à partir du viewBox seul, mais Firefox/Safari pouvaient le résoudre en retard
-       ou différemment selon le contexte (affichage juste après display:none, animation en cours,
-       chargement des polices web) — ce qui décalait le calque d'annotations. aspect-ratio est
-       supporté de façon fiable et identique sur Chrome ≥88, Firefox ≥89 et Safari ≥15. */
-    #xs20-svg{aspect-ratio:2048/1365}
-    #xs20-back-content{aspect-ratio:1536/864}
-    #xs20-lens-content{aspect-ratio:2120/2120}
     /* Points d'annotation animés sur le SVG */
     /* ── Annotations SVG intégrées ── */
     .anno-wrap{width:100%}
