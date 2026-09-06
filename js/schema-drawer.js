@@ -1,4 +1,9 @@
-// 2026-09-03 15:53 (Paris) — V013 — VIEW_VIEWBOX.back mis à jour : {w:1536,h:864} (nouveau schéma FaceArr_vector.svg, remplace l'ancien 4096×1274)
+// 2026-09-06 (Paris) — V014 — Fix cross-navigateur : positionAnnotations() ne dépend plus du rendu intrinsèque
+// du <svg> photo (width:100%/height:auto) pour calculer l'échelle/position du calque d'annotations — ce calcul
+// utilise désormais uniquement le modèle de boîte CSS du conteneur (identique sur Blink/Gecko/WebKit), ce qui
+// corrige le décalage aléatoire des lignes de rappel observé sur Firefox/Safari (fonctionnait déjà sur Chrome).
+// Le repositionnement est aussi relancé en plusieurs vagues (rAF + filets de sécurité) au lieu d'un setTimeout
+// à délai fixe, pour absorber les écarts de timing d'animation/layout entre moteurs.
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
@@ -50,13 +55,31 @@ function bestView(front,back,lens){
   return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
 }
 
+// ═══════════════════════════════════════════
+//  REPOSITIONNEMENT ROBUSTE MULTI-NAVIGATEURS
+//  Au lieu d'un setTimeout unique à délai arbitraire (qui supposait une durée
+//  d'animation/layout identique sur tous les moteurs), on relance positionAnnotations
+//  en plusieurs vagues : immédiatement, puis après le prochain double rAF (layout+paint
+//  garantis terminés), puis avec deux filets de sécurité pour couvrir l'animation
+//  d'ouverture du tiroir (.32s) même sur des moteurs plus lents à stabiliser le layout.
+// ═══════════════════════════════════════════
+function requestReposition(){
+  if(currentDrawerTab!=='schema')return;
+  positionAnnotations();
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(positionAnnotations);
+  });
+  setTimeout(positionAnnotations,160);
+  setTimeout(positionAnnotations,350);
+}
+
 function switchView(v){
   currentView=v;
   ['front','back','lens'].forEach(x=>{
     document.getElementById('svt-'+x)?.classList.toggle('active',x===v);
     document.getElementById('view-'+x)?.classList.toggle('active',x===v);
   });
-  setTimeout(positionAnnotations, 60);
+  requestReposition();
 }
 
 
@@ -66,7 +89,7 @@ function switchDrawerTab(tab){
     document.getElementById('dtab-'+t)?.classList.toggle('active',t===tab);
     document.getElementById('svt-'+t)?.classList.toggle('active',t===tab);
   });
-  if(tab==='schema') setTimeout(positionAnnotations,80);
+  if(tab==='schema') requestReposition();
 }
 
 function toggleExpand(){
@@ -75,7 +98,7 @@ function toggleExpand(){
   const expanded=sheet.classList.toggle('expanded');
   if(btn) btn.textContent=expanded?'⤡':'⤢';
   // Repositionner les annotations si schéma visible
-  if(currentDrawerTab==='schema') setTimeout(positionAnnotations,100);
+  if(currentDrawerTab==='schema') requestReposition();
 }
 
 function switchScreenTab(tab){
@@ -115,10 +138,10 @@ function refreshSchema(){
     }).join('')}`;
   // Vue auto pour l'onglet schéma
   const best=bestView(front,back,lens);
-  switchView(best);
+  switchView(best); // switchView() relance déjà requestReposition() si l'onglet schéma est actif
 
   if(document.getElementById('sheet-overlay').classList.contains('open')&&currentDrawerTab==='schema'){
-    setTimeout(positionAnnotations,80);
+    requestReposition();
   }
 }
 
@@ -254,24 +277,34 @@ function positionAnnotations(){
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
   wrap.style.position='relative';
   wrap.appendChild(svg);
-  // ── Alignement pixel-perfect ──
-  // Le viewBox du calque est plus HAUT que celui de l'image réelle (il inclut les
-  // marges pour les étiquettes en haut/bas). Si on se contente de width:100%/height:100%
-  // sur le calque, son "meet" le fait rentrer dans le cadre de l'image (proportions
-  // différentes) → tout le contenu se retrouve compressé et recentré, désaligné des
-  // vrais boutons. On calcule donc explicitement la taille et la position du calque
-  // en pixels, à partir du rendu réel de l'image, pour que l'échelle soit identique.
+  // ── Alignement pixel-perfect, ROBUSTE MULTI-NAVIGATEURS ──
+  // On ne mesure plus la boîte rendue du <svg> photo lui-même via getBoundingClientRect() :
+  // ce <svg> est dimensionné en width:100%/height:auto à partir de son viewBox, et Firefox/Safari
+  // ne résolvent pas ce ratio intrinsèque de façon aussi déterministe que Chrome selon le contexte
+  // (juste après un display:none→block, pendant l'animation d'ouverture du tiroir, avant le chargement
+  // des polices web) — ce qui provoquait un décalage aléatoire des lignes de rappel sur ces navigateurs.
+  // On calcule donc l'échelle et la position uniquement à partir du modèle de boîte CSS du conteneur
+  // (clientWidth + padding), qui est standardisé de façon identique sur Blink/Gecko/WebKit.
   function syncOverlayGeometry(){
-    if(!realSvg)return;
+    if(!wrap.isConnected)return;
     const wrapRect=wrap.getBoundingClientRect();
-    const imgRect=realSvg.getBoundingClientRect();
-    if(!imgRect.width)return;
-    const scale=imgRect.width/VBW;
+    const cs=getComputedStyle(wrap);
+    const padL=parseFloat(cs.paddingLeft)||0;
+    const padT=parseFloat(cs.paddingTop)||0;
+    const padR=parseFloat(cs.paddingRight)||0;
+    // wrap.clientWidth = largeur de contenu + padding (bordure exclue) ; en retirant le padding
+    // horizontal on obtient exactement la largeur disponible pour le <svg> photo (width:100%),
+    // sans dépendre de la résolution de son "height:auto" par le moteur de rendu.
+    const contentWidth=wrap.clientWidth-padL-padR;
+    if(!contentWidth)return; // vue non visible (display:none) : on ne positionne pas encore
+    const scale=contentWidth/VBW;
+    const imgLeft=wrap.clientLeft+padL;
+    const imgTop=wrap.clientTop+padT;
     svg.setAttribute('style',
       `position:absolute;pointer-events:none;overflow:visible;z-index:4;`+
-      `left:${imgRect.left-wrapRect.left}px;`+
-      `top:${(imgRect.top-wrapRect.top)-VB_MARGIN_TOP*scale}px;`+
-      `width:${imgRect.width}px;`+
+      `left:${imgLeft}px;`+
+      `top:${imgTop-VB_MARGIN_TOP*scale}px;`+
+      `width:${contentWidth}px;`+
       `height:${VBH2*scale}px;`);
     // Réserve de l'espace vertical autour du cadre pour que les étiquettes qui
     // débordent (au-dessus/en-dessous, cf. overflow:visible sur .svg-wrap) ne
@@ -357,4 +390,11 @@ function positionAnnotations(){
   }
   topIds.forEach((id,i)=>drawAnnotation(id,topX[i],true,i,topIds.length));
   botIds.forEach((id,i)=>drawAnnotation(id,botX[i],false,i,botIds.length));
+}
+
+// Filet de sécurité additionnel : si les polices web finissent de charger après
+// l'ouverture initiale du drawer (Cinzel/Inter via Google Fonts), on relance un
+// repositionnement au cas où cela aurait légèrement modifié le layout du tiroir.
+if(document.fonts&&document.fonts.ready){
+  document.fonts.ready.then(()=>{ if(currentDrawerTab==='schema') requestReposition(); }).catch(()=>{});
 }
