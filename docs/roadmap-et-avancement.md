@@ -30,6 +30,6 @@ Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architect
 6. **Ajouter les horodatages + numéro de version `Vxxx`** dans les fichiers dès la prochaine livraison (exigence du projet non respectée récemment).
 7. **Revoir la stratégie de cache du service worker** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
 8. **Corriger le problème d'affichage dans Firefox et Safari** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
-9. **Modifier les couleurs de la face arrière**, actuellement l'affichage face arrière n'est quasiment pas discernement (couleurs d'ombre sur couleur sombre).
+9. **Modifier les couleurs de la face arrière**, actuellement l'affichage face arrière n'est quasiment pas discernable en mode sombre (couleurs d'ombre sur couleur sombre).
 
 ---
