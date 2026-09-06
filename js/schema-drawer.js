@@ -1,4 +1,4 @@
-// 2026-09-03 15:53 (Paris) — V013 — VIEW_VIEWBOX.back mis à jour : {w:1536,h:864} (nouveau schéma FaceArr_vector.svg, remplace l'ancien 4096×1274)
+// 2026-09-06 07:42 (Paris) — V014 — Étiquettes des schémas enrichies : ajout du nom du paramètre + sa valeur (ex. "VITESSE 1/250 s") sur une 2e ligne sous le nom du contrôle physique ; LBL_H2/LBL_FONT1 ajoutés, marges verticales agrandies en conséquence
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
@@ -221,11 +221,14 @@ const VIEW_VIEWBOX={
   lens: {w:2120,h:2120},
 };
 // Marges internes (en unités viewBox) pour les étiquettes
-const VB_MARGIN_TOP  = 300; // espace au-dessus du visuel pour les étiquettes haut
-const VB_MARGIN_BOT  = 300; // espace en dessous pour les étiquettes bas
-const LBL_H          = 74;  // hauteur d'une étiquette (unités vb)
+const VB_MARGIN_TOP  = 340; // espace au-dessus du visuel pour les étiquettes haut (agrandi pour 2 lignes)
+const VB_MARGIN_BOT  = 340; // espace en dessous pour les étiquettes bas (agrandi pour 2 lignes)
+const LBL_H          = 74;  // hauteur d'une étiquette à une seule ligne (repli, unités vb)
+const LBL_H3         = 196; // hauteur d'une étiquette à 3 lignes : nom du contrôle / PARAMÈTRE / VALEUR
 const LBL_PAD_X      = 26;  // padding horizontal étiquette
-const LBL_FONT       = 54;  // taille police étiquette
+const LBL_FONT       = 54;  // taille police ligne 3 (valeur du réglage, mise en avant)
+const LBL_FONT1      = 34;  // taille police ligne 1 (nom du contrôle physique)
+const LBL_FONT2      = 40;  // taille police ligne 2 (nom du paramètre, en majuscules)
 const LBL_CORNER     = 14;  // rayon coin arrondi
 const LBL_TIER_GAP   = 34;  // écart vertical entre étages de lignes pour éviter les chevauchements
 function positionAnnotations(){
@@ -285,9 +288,6 @@ function positionAnnotations(){
     ro.observe(wrap);
     wrap._annoResizeObserver=ro;
   }
-  function spreadVBX(ids){const n=ids.length;if(!n)return[];return ids.map((_,i)=>n===1?VBW/2:VBW*(i+1)/(n+1));}
-  const topX=spreadVBX(topIds),botX=spreadVBX(botIds);
-
   function getParamForControl(ctrlId){
     const params=currentAnnotations.paramsSnapshot||{};
     for(const paramName of Object.keys(params)){
@@ -304,7 +304,10 @@ function positionAnnotations(){
   const activeParamOrder=getActiveParamOrder(currentAnnotations.paramsSnapshot);
   function colorForParam(paramName){return colorForParamName(paramName,activeParamOrder,isDark);}
 
-  function drawAnnotation(id,lblX,fromTop,tierIdx,tierCount){
+  const MAX_LABEL_CHARS=24; // tronque les noms de contrôle très longs (ex. "Bouton DISP/BACK (menu Q réduit)") pour borner la largeur de l'étiquette
+
+  // ── Étape 1 : mesurer chaque étiquette (texte + dimensions) avant tout placement ──
+  function buildLabelData(id){
     const coord=CONTROL_COORDS[id];
     const svgRoot=wrap.querySelector('svg');
     const anchor=svgRoot?.querySelector('#anchor-'+id);
@@ -312,33 +315,112 @@ function positionAnnotations(){
     const py=anchor?parseFloat(anchor.getAttribute('cy')):(coord.y/100)*VBH;
     const paramName=getParamForControl(id);
     const col=colorForParam(paramName);
-    const label=coord.label;
-    const txtW=Math.max(label.length*LBL_FONT*0.52,120);
+    const rawLabel=coord.label; // nom du contrôle physique (ex. "Molette vitesse")
+    const label=rawLabel.length>MAX_LABEL_CHARS?rawLabel.slice(0,MAX_LABEL_CHARS-1)+'…':rawLabel;
+    // Paramètre + valeur du réglage concerné, sur 2 sous-lignes distinctes (nom, puis
+    // valeur) plutôt que concaténées : la largeur de l'étiquette dépend alors du plus
+    // long des deux mots, pas de leur somme, ce qui évite les collisions entre
+    // étiquettes voisines quand la valeur est longue (ex. "Nuageux / 6000 K").
+    const pval=paramName?(currentAnnotations.paramsSnapshot||{})[paramName]:null;
+    const paramLine=pval&&pval.value?paramName.toUpperCase():null;
+    const valueLine=pval&&pval.value?pval.value:null;
+    const hasValue=!!valueLine;
+    const boxH=hasValue?LBL_H3:LBL_H;
+    const line1W=label.length*LBL_FONT1*0.56;
+    const line2W=hasValue?paramLine.length*LBL_FONT2*0.56:0;
+    const line3W=hasValue?valueLine.length*LBL_FONT*0.52:0;
+    const txtW=Math.max(line1W,line2W,line3W,120);
     const lblW=txtW+LBL_PAD_X*2;
-    const lblX0=Math.max(10,Math.min(VBW-lblW-10,lblX-lblW/2));
-    const lblCX=lblX0+lblW/2;
-    const lblY0=fromTop?VBY0+20:VBH+VB_MARGIN_BOT-LBL_H-20;
-    const lblCY=lblY0+LBL_H/2;
+    return{id,px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW};
+  }
+
+  // ── Étape 2 : résoudre les collisions horizontales le long d'une même rangée ──
+  // Chaque étiquette vise le x de sa propre ancre ; en cas de chevauchement avec
+  // sa voisine (largeurs réelles, pas une répartition fixe en tiers), on la pousse
+  // vers la droite, puis on ramène l'ensemble dans le cadre si besoin.
+  const ROW_GAP=22;
+  function resolveRow(ids){
+    const items=ids.map(buildLabelData).sort((a,b)=>a.px-b.px);
+    items.forEach(it=>{it.centerX=Math.min(VBW-10-it.lblW/2,Math.max(10+it.lblW/2,it.px));});
+    for(let i=1;i<items.length;i++){
+      const prev=items[i-1],cur=items[i];
+      const minCenter=prev.centerX+prev.lblW/2+ROW_GAP+cur.lblW/2;
+      if(cur.centerX<minCenter) cur.centerX=minCenter;
+    }
+    const last=items[items.length-1];
+    if(last){
+      const overflow=(last.centerX+last.lblW/2)-(VBW-10);
+      if(overflow>0){
+        items.forEach(it=>it.centerX-=overflow);
+        for(let i=items.length-2;i>=0;i--){
+          const next=items[i+1],cur=items[i];
+          const maxCenter=next.centerX-next.lblW/2-ROW_GAP-cur.lblW/2;
+          if(cur.centerX>maxCenter) cur.centerX=maxCenter;
+        }
+      }
+    }
+    return items;
+  }
+
+  // ── Étape 3 : dessiner chaque étiquette à sa position résolue ──
+  function drawAnnotation(it,fromTop,tierIdx){
+    const{px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW,centerX}=it;
+    const lblX0=centerX-lblW/2;
+    const lblCX=centerX;
+    const lblY0=fromTop?VBY0+20:VBH+VB_MARGIN_BOT-boxH-20;
+    const lblCY=lblY0+boxH/2;
     // Fond étiquette
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x',lblX0);rect.setAttribute('y',lblY0);rect.setAttribute('width',lblW);rect.setAttribute('height',LBL_H);
+    rect.setAttribute('x',lblX0);rect.setAttribute('y',lblY0);rect.setAttribute('width',lblW);rect.setAttribute('height',boxH);
     rect.setAttribute('rx',LBL_CORNER);rect.setAttribute('fill',isDark?'rgba(10,12,16,.9)':'rgba(250,248,244,.93)');
     rect.setAttribute('stroke',col);rect.setAttribute('stroke-width','4');
     svg.appendChild(rect);
     // Texte
-    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('x',lblX0+lblW/2);txt.setAttribute('y',lblCY+LBL_FONT*0.38);
-    txt.setAttribute('text-anchor','middle');
-    txt.setAttribute('font-family','Inter,system-ui,sans-serif');
-    txt.setAttribute('font-size',LBL_FONT);txt.setAttribute('font-weight','700');
-    txt.setAttribute('fill',col);
-    txt.textContent=label;
-    svg.appendChild(txt);
+    if(hasValue){
+      // Ligne 1 — nom du contrôle physique, discret, en haut de l'étiquette
+      const txt1=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt1.setAttribute('x',lblCX);txt1.setAttribute('y',lblY0+16+LBL_FONT1*0.8);
+      txt1.setAttribute('text-anchor','middle');
+      txt1.setAttribute('font-family','Inter,system-ui,sans-serif');
+      txt1.setAttribute('font-size',LBL_FONT1);txt1.setAttribute('font-weight','600');
+      txt1.setAttribute('fill',isDark?'rgba(232,242,248,.65)':'rgba(20,20,20,.68)');
+      txt1.textContent=label;
+      svg.appendChild(txt1);
+      // Ligne 2 — nom du PARAMÈTRE, en majuscules, taille intermédiaire
+      const txt2=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt2.setAttribute('x',lblCX);txt2.setAttribute('y',lblY0+16+LBL_FONT1+LBL_FONT2*0.85);
+      txt2.setAttribute('text-anchor','middle');
+      txt2.setAttribute('font-family','Inter,system-ui,sans-serif');
+      txt2.setAttribute('font-size',LBL_FONT2);txt2.setAttribute('font-weight','700');
+      txt2.setAttribute('fill',col);
+      txt2.setAttribute('letter-spacing','.5');
+      txt2.textContent=paramLine;
+      svg.appendChild(txt2);
+      // Ligne 3 — VALEUR du réglage, mise en avant (couleur du paramètre, gras, plus grand)
+      const txt3=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt3.setAttribute('x',lblCX);txt3.setAttribute('y',lblY0+boxH-26);
+      txt3.setAttribute('text-anchor','middle');
+      txt3.setAttribute('font-family','Inter,system-ui,sans-serif');
+      txt3.setAttribute('font-size',LBL_FONT);txt3.setAttribute('font-weight','700');
+      txt3.setAttribute('fill',col);
+      txt3.textContent=valueLine;
+      svg.appendChild(txt3);
+    }else{
+      // Repli : uniquement le nom du contrôle (aucun paramètre actif identifié)
+      const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x',lblCX);txt.setAttribute('y',lblCY+LBL_FONT*0.38);
+      txt.setAttribute('text-anchor','middle');
+      txt.setAttribute('font-family','Inter,system-ui,sans-serif');
+      txt.setAttribute('font-size',LBL_FONT);txt.setAttribute('font-weight','700');
+      txt.setAttribute('fill',col);
+      txt.textContent=label;
+      svg.appendChild(txt);
+    }
     // Trait — chaque étiquette a son propre "étage" horizontal (tier) pour que
     // les lignes ne se superposent jamais, même si elles se croisent.
-    const tierBase=fromTop?(VBY0+20+LBL_H+22):(VBH+22);
+    const tierBase=fromTop?(VBY0+20+boxH+22):(VBH+22);
     const midY=tierBase+(tierIdx||0)*LBL_TIER_GAP;
-    const tStartY=fromTop?lblY0+LBL_H:lblY0;
+    const tStartY=fromTop?lblY0+boxH:lblY0;
     const line=document.createElementNS('http://www.w3.org/2000/svg','path');
     line.setAttribute('d',`M ${lblCX} ${tStartY} L ${lblCX} ${midY} L ${px} ${midY} L ${px} ${py}`);
     line.setAttribute('fill','none');line.setAttribute('stroke',col);
@@ -355,6 +437,7 @@ function positionAnnotations(){
     dot.setAttribute('fill',col);dot.setAttribute('class','dot-active');
     svg.appendChild(dot);
   }
-  topIds.forEach((id,i)=>drawAnnotation(id,topX[i],true,i,topIds.length));
-  botIds.forEach((id,i)=>drawAnnotation(id,botX[i],false,i,botIds.length));
+  const topItems=resolveRow(topIds),botItems=resolveRow(botIds);
+  topItems.forEach((it,i)=>drawAnnotation(it,true,i));
+  botItems.forEach((it,i)=>drawAnnotation(it,false,i));
 }
