@@ -18,6 +18,7 @@ Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre v
 - ⏳ **Enrichissement des étiquettes des contrôles** — il faudra agrandir le cadre des étiquettes pour y intégrer les valeurs du contrôle et une image du contrôle.
 - ⏳ **Simulation LCD** — pas encore intégrée au nouveau système de vues/vignettes.
 - ⏳ **Vignettes cliquables remplaçant les onglets** — pas encore implémenté (actuellement encore des onglets classiques `svt-front/svt-lens/svt-back`).
+- ⏳ **Problèmes Firefox et Safari**, actuellement l'affichage des étiquettes fonctionne correctement dans Chrome, la correction apportée en `V014` a apporté un autre problème, on reportera la correction à plus tard, pour l'instant on considère que l'app ne fonctionne que sur Chrome.
 
 Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architecture est prévue pour accueillir d'autres modes plus tard sans réécriture.
 
@@ -29,6 +30,7 @@ Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architect
 5. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
 6. **Puis les vignettes cliquables** en remplacement des onglets actuels.
 7. **Ajouter les horodatages + numéro de version `Vxxx`** dans les fichiers dès la prochaine livraison (exigence du projet non respectée récemment).
-8. **Revoir la stratégie de cache du service worker** dans un fil séparé (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
+8. **Revoir la stratégie de cache du service worker** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
+9. **Corriger le problème d'affichage dans Firefox et Safari** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
 
 ---
