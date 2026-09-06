@@ -1,3 +1,4 @@
+/* 2026-09-06 07:42 (Paris) — V014 — .svg-wrap : overflow:hidden → visible (bug corrigé : ce overflow rognait les étiquettes du schéma annoté qui débordent au-dessus/en-dessous du cadre via des offsets négatifs ; la marge réservée en JS ne suffisait pas tant que l'overflow n'était pas ouvert) */
     :root,[data-theme="dark"]{
       --bg-deep:#07090d;--bg-card:#0e1118;--bg-glass:rgba(14,17,24,.93);
       --bg-param:rgba(255,255,255,.04);--bg-popup:#0e1118;
@@ -180,7 +181,7 @@
     .sheet-body{padding:14px 16px 20px;flex:1;overflow-y:auto}
 
     /* SVG wrapper */
-    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:visible;position:relative;max-width:50%;margin:0 auto}
+    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:visible;position:relative}
     [data-theme="light"] .svg-wrap{background:rgba(0,0,0,.03)}
     .svg-wrap svg{width:100%;height:auto;display:block}
     /* Points d'annotation animés sur le SVG */
