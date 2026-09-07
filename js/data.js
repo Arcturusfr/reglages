@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // DONNÉES — préréglages par défaut, mapping paramètre → contrôles génériques
 // ═══════════════════════════════════════════
 //  DONNÉES PAR DÉFAUT
