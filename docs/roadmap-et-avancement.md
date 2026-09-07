@@ -1,4 +1,4 @@
-Version 2026-09-06 18:33 (Europe/Paris)
+Version 2026-09-07 10:46 (Europe/Paris)
 
 ## Important ##
 
@@ -17,19 +17,14 @@ Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre v
 - ⏳ **Vue objectif** — pas encore ancrée, à faire plus tard.
 - ⏳ **Simulation LCD** — pas encore intégrée au nouveau système de vues/vignettes.
 - ⏳ **Vignettes cliquables remplaçant les onglets** — pas encore implémenté (actuellement encore des onglets classiques `svt-front/svt-lens/svt-back`).
-- ⏳ **Problèmes Firefox et Safari**, actuellement l'affichage des étiquettes fonctionne correctement dans Chrome, la correction apportée en `V014` a apporté un autre problème, on reportera la correction à plus tard, pour l'instant on considère que l'app ne fonctionne que sur Chrome.
 
 Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architecture est prévue pour accueillir d'autres modes plus tard sans réécriture.
 
 ## Prochaines étapes immédiates
-1. **Réorganiser l'affichage du contenu du drawer**, mettre la liste des réglages dans une colonne à gauche, le schéma de la vue active à droite de cette colonne.
+1. **Vue Objectif**, réduire la taille du schéma SVG de l'objectif et affiner les traits pour s'harmoniser avec les 2 autres schémas, puis adaptation de l'outil `editeur-ancres-vue-avant.html` avec le schéma de l'objectif et les contrôles correspondants.
 2. **Puis insérer une image du contrôle dans chaque étiquette**
-3. **Puis la vue objectif**, adaptation de l'outil `editeur-ancres-vue-avant.html` avec le schéma de l'objectif et les contrôles correspondants.
-4. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
-5. **Puis les vignettes cliquables** en remplacement des onglets actuels.
-6. **Ajouter les horodatages + numéro de version `Vxxx`** dans les fichiers dès la prochaine livraison (exigence du projet non respectée récemment).
-7. **Revoir la stratégie de cache du service worker** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
-8. **Corriger le problème d'affichage dans Firefox et Safari** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
-9. **Modifier les couleurs de la face arrière**, actuellement l'affichage face arrière n'est quasiment pas discernable en mode sombre (couleurs d'ombre sur couleur sombre).
-
+3. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
+4. **Puis les vignettes cliquables** en remplacement des onglets actuels.
+5. **Revoir la stratégie de cache du service worker** à faire plus tard (pas urgent pour le développement du drawer, mais à ne pas perdre de vue).
+6. **Modifier les couleurs de la face arrière en mode sombre**, actuellement l'affichage face arrière n'est quasiment pas discernable en mode sombre (couleurs d'ombre sur couleur sombre).
 ---
