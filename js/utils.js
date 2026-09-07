@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // UTILS — toast de notification, échappement HTML
 // UTILS
 let toastTimer;
