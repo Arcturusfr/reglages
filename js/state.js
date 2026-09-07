@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // STATE — état global des préréglages (CRUD localStorage) et résolution des paramètres
 const LS_KEY='photomanuel_presets_v4';
 let presets=[],editingId=null,formState={};
