@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // INIT — écouteurs globaux et démarrage de l'application (+ enregistrement du service worker)
 document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))closeModal();});
 
