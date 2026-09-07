@@ -1,4 +1,4 @@
-<!-- 2026-09-06 07:42 (Paris) — V014 — Étiquettes des schémas annotés enrichies : nom du contrôle + PARAMÈTRE VALEUR (ex. "VITESSE 1/250 s") sur 2 lignes (voir js/schema-drawer.js). -->
+<!-- 2026-09-06 21:39 (Paris) — V014 — Drawer agrandi : onglet Schéma réparti en 2 colonnes (légende "Commandes concernées" ~1/3 à gauche, vues SVG ~2/3 à droite) pour que l'ensemble du drawer tienne à l'écran en mode élargi. Ajout du wrapper .schema-views-col autour des sous-onglets de vue + des 3 vues. -->
 <!DOCTYPE html>
 <html lang="fr" data-theme="dark">
 <head>
@@ -166,6 +166,7 @@
 
       <!-- ════ ONGLET SCHÉMA : vues annotées ════ -->
       <div class="drawer-tab" id="dtab-schema">
+        <div class="schema-views-col">
         <div class="schema-sub-tabs">
           <button class="svt active" id="svt-front" onclick="switchView('front')">📷 Face avant</button>
           <button class="svt" id="svt-lens"  onclick="switchView('lens')">🔭 Objectif</button>
@@ -635,6 +636,7 @@
 </svg>
           </div>
         </div>
+        </div><!-- /schema-views-col -->
         <div class="schema-legend" id="schema-legend"></div>
       </div>
 
