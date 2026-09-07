@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // TABS — navigation entre les onglets principaux (Guide / Préréglages / Export-Import)
 function showTab(tab){
   ['guide','manage','io'].forEach(t=>{
