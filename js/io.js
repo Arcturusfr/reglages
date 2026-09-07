@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // IO — export / import JSON, réinitialisation, drag & drop
 function exportData(){
   const blob=new Blob([JSON.stringify({version:4,app:'PhotoManuel',exportedAt:new Date().toISOString(),presets},null,2)],{type:'application/json'});
