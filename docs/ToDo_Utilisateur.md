@@ -1,3 +1,5 @@
 - [X] Rédiger base `Instructions`
-- [ ] Préparer une demande d'agrandissement des étiquettes liées aux schémas SVG pour pouvoir y accueillir les valeurs du réglage correspondant et une image de ce contrôle
+- [ ] Préparer une demande d'agrandissement des étiquettes liées aux schémas SVG pour pouvoir y accueillir :
+     - [ ] les valeurs du réglage correspondant
+     - [ ] une image de ce contrôle
 - [ ] Créer des schémas SVG isolés des différents contrôles du Fujifilm X-S20
