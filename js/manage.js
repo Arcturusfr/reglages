@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // MANAGE — rendu de l'onglet Préréglages (liste, suppression)
 function renderManage(){
   document.getElementById('preset-list').innerHTML=presets.map(p=>{
