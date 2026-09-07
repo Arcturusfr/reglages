@@ -1,3 +1,4 @@
+    /* 2026-09-06 21:39 (Paris) — V014 — Drawer élargi : layout 2 colonnes pour l'onglet Schéma (#schema-legend ~1/3 à gauche, .schema-views-col ~2/3 à droite) afin que le drawer tienne entièrement à l'écran en mode agrandi. */
     :root,[data-theme="dark"]{
       --bg-deep:#07090d;--bg-card:#0e1118;--bg-glass:rgba(14,17,24,.93);
       --bg-param:rgba(255,255,255,.04);--bg-popup:#0e1118;
@@ -180,13 +181,9 @@
     .sheet-body{padding:14px 16px 20px;flex:1;overflow-y:auto}
 
     /* SVG wrapper */
-    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:hidden;position:relative}
+    .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:visible;position:relative}
     [data-theme="light"] .svg-wrap{background:rgba(0,0,0,.03)}
     .svg-wrap svg{width:100%;height:auto;display:block}
-    /* Vue objectif : viewBox carré (2120×2120) beaucoup plus "haut" à l'écran que les
-       vues avant/arrière (rectangulaires) — on réduit son emprise visuelle de moitié
-       et on la centre, pour une échelle cohérente avec les 2 autres schémas. */
-    #svg-lens-wrap{max-width:50%;margin:0 auto}
     /* Points d'annotation animés sur le SVG */
     /* ── Annotations SVG intégrées ── */
     .anno-wrap{width:100%}
@@ -314,6 +311,36 @@
     .sheet-expand:hover{border-color:var(--gold);color:var(--gold)}
     /* Drawer élargi (mode ZFold déplié) */
     .bottom-sheet.expanded{width:min(98vw,720px)!important}
+    /* ── Onglet Schéma en mode élargi : 2 colonnes (légende ~1/3 gauche, vues ~2/3 droite) ── */
+    .bottom-sheet.expanded #dtab-schema.active{
+      display:flex;
+      flex-direction:row;
+      align-items:flex-start;
+      gap:16px;
+    }
+    .bottom-sheet.expanded #dtab-schema.active .schema-views-col{
+      flex:0 0 66%;
+      max-width:66%;
+      min-width:0;
+      order:2;
+    }
+    .bottom-sheet.expanded #dtab-schema.active #schema-legend{
+      flex:0 0 32%;
+      max-width:32%;
+      order:1;
+      flex-direction:column;
+      align-items:flex-start;
+      margin-top:0;
+      gap:8px;
+    }
+    .bottom-sheet.expanded #dtab-schema.active .schema-views-col .svg-wrap{max-width:100%}
+    /* En dessous de cette largeur, le 2-colonnes redevient trop étroit (ex. ZFold replié) : on repasse en 1 colonne empilée */
+    @media(max-width:560px){
+      .bottom-sheet.expanded #dtab-schema.active{flex-direction:column}
+      .bottom-sheet.expanded #dtab-schema.active .schema-views-col,
+      .bottom-sheet.expanded #dtab-schema.active #schema-legend{flex:1 1 100%;max-width:100%}
+      .bottom-sheet.expanded #dtab-schema.active #schema-legend{flex-direction:row;flex-wrap:wrap;margin-top:14px}
+    }
     /* Légende */
     .schema-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
     .leg-item{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--tip-text)}
