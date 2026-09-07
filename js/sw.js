@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // PhotoManuel — Service Worker
 const CACHE_NAME = 'photomanuel-v20';
 
