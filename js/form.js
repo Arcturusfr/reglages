@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // FORM — formulaire d'ajout/édition d'un préréglage (modale)
 function openAddModal(){
   editingId=null;
