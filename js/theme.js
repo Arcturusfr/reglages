@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // THEME — bascule clair/sombre, persistance localStorage
 const LS_THEME='photomanuel_theme_v2';
 function setTheme(t){
