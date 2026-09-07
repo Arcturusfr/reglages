@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // GUIDE — rendu de l'onglet Guide (grille de catégories/préréglages)
 function renderGuide(){
   const cats=[...new Set(presets.map(p=>p.category))];
