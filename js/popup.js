@@ -1,3 +1,4 @@
+// 2026-09-07 00:00 (Paris) — V015
 // POPUP — popup de détail d'un préréglage + drawer schéma (ouverture/fermeture, rendu, sheet)
 function openPopup(id){
   currentPopupPreset=getPreset(id);if(!currentPopupPreset)return;
