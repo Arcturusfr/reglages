@@ -1,5 +1,5 @@
-// 2026-09-07 00:00 (Paris) — V015
 // PhotoManuel — Service Worker
+// 2026-09-08 (Paris) — V017 — CACHE_NAME incrémenté (v19→v20) pour forcer l'invalidation du cache : les modifs CSS/JS des dernières livraisons (V015/V016) restaient invisibles côté client car servies depuis l'ancien cache (stratégie cache-first sur les assets non-document).
 const CACHE_NAME = 'photomanuel-v20';
 
 const ASSETS = [

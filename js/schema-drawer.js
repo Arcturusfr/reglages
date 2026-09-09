@@ -1,4 +1,4 @@
-// 2026-09-06 07:42 (Paris) — V014 — Étiquettes des schémas enrichies : ajout du nom du paramètre + sa valeur (ex. "VITESSE 1/250 s") sur une 2e ligne sous le nom du contrôle physique ; LBL_H2/LBL_FONT1 ajoutés, marges verticales agrandies en conséquence
+// 2026-09-08 (Paris) — V017 — Harmonisation des tailles de police des étiquettes de schéma : LBL_FONT1 (nom du contrôle) et LBL_FONT2 (nom du paramètre) alignées sur LBL_FONT=54 (la plus grande taille déjà utilisée pour la valeur du réglage), au lieu de 34/40 respectivement. LBL_H3 agrandie de 196 à 204 pour accueillir les 3 lignes à cette taille sans chevauchement (formules de positionnement des lignes inchangées, seules les constantes de taille changent).
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
@@ -224,11 +224,11 @@ const VIEW_VIEWBOX={
 const VB_MARGIN_TOP  = 340; // espace au-dessus du visuel pour les étiquettes haut (agrandi pour 2 lignes)
 const VB_MARGIN_BOT  = 340; // espace en dessous pour les étiquettes bas (agrandi pour 2 lignes)
 const LBL_H          = 74;  // hauteur d'une étiquette à une seule ligne (repli, unités vb)
-const LBL_H3         = 196; // hauteur d'une étiquette à 3 lignes : nom du contrôle / PARAMÈTRE / VALEUR
+const LBL_H3         = 204; // hauteur d'une étiquette à 3 lignes : nom du contrôle / PARAMÈTRE / VALEUR (agrandie pour accueillir les 3 lignes à taille harmonisée)
 const LBL_PAD_X      = 26;  // padding horizontal étiquette
-const LBL_FONT       = 54;  // taille police ligne 3 (valeur du réglage, mise en avant)
-const LBL_FONT1      = 34;  // taille police ligne 1 (nom du contrôle physique)
-const LBL_FONT2      = 40;  // taille police ligne 2 (nom du paramètre, en majuscules)
+const LBL_FONT       = 54;  // taille police, harmonisée sur les 3 lignes (calée sur la plus grande taille existante)
+const LBL_FONT1      = 54;  // taille police ligne 1 (nom du contrôle physique) — harmonisée avec LBL_FONT
+const LBL_FONT2      = 54;  // taille police ligne 2 (nom du paramètre, en majuscules) — harmonisée avec LBL_FONT
 const LBL_CORNER     = 14;  // rayon coin arrondi
 const LBL_TIER_GAP   = 34;  // écart vertical entre étages de lignes pour éviter les chevauchements
 function positionAnnotations(){
