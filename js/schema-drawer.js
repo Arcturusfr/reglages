@@ -1,4 +1,4 @@
-// 2026-09-08 (Paris) — V017 — Harmonisation des tailles de police des étiquettes de schéma : LBL_FONT1 (nom du contrôle) et LBL_FONT2 (nom du paramètre) alignées sur LBL_FONT=54 (la plus grande taille déjà utilisée pour la valeur du réglage), au lieu de 34/40 respectivement. LBL_H3 agrandie de 196 à 204 pour accueillir les 3 lignes à cette taille sans chevauchement (formules de positionnement des lignes inchangées, seules les constantes de taille changent).
+// 2026-09-11 (Paris) — V020 — Harmonisation de la taille RÉELLE (pixels écran) des étiquettes entre les 3 schémas (avant/arrière/objectif), dans tous les modes du drawer. Cause : viewBox de largeurs différentes (2048/1536/2120) + vue Objectif affichée à 50% de la largeur de colonne (vs 100% pour avant/arrière) → à taille de police fixe en unités viewBox, le texte rendu était ~25% plus petit sur la vue avant et ~2,3× plus petit sur la vue objectif que sur la vue arrière. Ajout de VIEW_WRAP_RATIO + labelScaleForView() qui calcule, par vue, un facteur multiplicatif appliqué à toutes les tailles/marges d'étiquette (police, hauteur de boîte, paddings, marges de réserve, écarts d'étage) de sorte que la taille réelle affichée soit identique partout — sans jamais réduire la vue de référence (arrière, déjà la plus grande). Aucune modification des marqueurs (points/anneaux d'ancrage) ni des épaisseurs de trait, volontairement laissés à taille fixe.
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
@@ -220,7 +220,38 @@ const VIEW_VIEWBOX={
   back: {w:1536,h:864}, // FaceArr_vector.svg (nouveau schéma arrière)
   lens: {w:2120,h:2120},
 };
-// Marges internes (en unités viewBox) pour les étiquettes
+// ── Harmonisation de la taille RÉELLE (pixels écran) des étiquettes entre les 3 vues ──
+// Les 3 schémas ont des viewBox de largeurs différentes (2048/1536/2120) et ne sont pas
+// affichés à la même largeur relative dans le drawer : la vue Objectif est volontairement
+// réduite à 50% de la largeur de colonne disponible (cf. styles.css #svg-lens-wrap{max-width:50%}),
+// alors que les vues Avant/Arrière occupent 100% de cette même largeur, dans tous les modes
+// du drawer (normal ou agrandi — les 2 partagent les mêmes ratios). À taille de police fixe
+// en unités viewBox, le texte rendu apparaît donc plus petit à mesure que (viewBox ÷ ratio
+// d'affichage) grandit. VIEW_MAX_WIDTH_RATIO documente ce ratio de max-width par vue (à
+// resynchroniser avec styles.css si celui-ci change) ; labelScaleForView() mesure EN DIRECT
+// (getBoundingClientRect, pas de valeur de padding CSS codée en dur) la largeur réellement
+// affichée de la vue courante et celle du padding interne de son wrapper, pour en déduire —
+// via ce même ratio — quelle serait la largeur d'affichage de la vue de RÉFÉRENCE (Arrière,
+// jamais réduite) dans la même colonne, puis le facteur exact à appliquer à toutes les
+// tailles/marges d'étiquette (unités viewBox) pour une taille réelle identique entre les 3
+// vues, y compris si le padding CSS du wrapper change plus tard.
+const VIEW_MAX_WIDTH_RATIO={front:1,back:1,lens:0.5};
+const LABEL_REF_VIEW='back';
+function labelScaleForView(view,wrapEl,realSvgEl,vbw){
+  const wrapRect=wrapEl&&wrapEl.getBoundingClientRect();
+  const svgWidth=realSvgEl&&realSvgEl.getBoundingClientRect().width;
+  if(!wrapRect||!wrapRect.width||!svgWidth)return 1;
+  const hpad=Math.max(0,wrapRect.width-svgWidth);
+  const columnWidth=wrapRect.width/(VIEW_MAX_WIDTH_RATIO[view]||1);
+  const refWrapWidth=columnWidth*(VIEW_MAX_WIDTH_RATIO[LABEL_REF_VIEW]||1);
+  const refSvgWidth=Math.max(1,refWrapWidth-hpad);
+  const refScale=refSvgWidth/VIEW_VIEWBOX[LABEL_REF_VIEW].w;
+  const curScale=svgWidth/vbw;
+  return curScale>0?refScale/curScale:1;
+}
+// Marges/dimensions des étiquettes, en unités viewBox — valeurs de RÉFÉRENCE (celles de la
+// vue de référence LABEL_REF_VIEW, cf. ci-dessus), multipliées par labelScaleForView() au
+// moment du tracé pour obtenir la taille réelle harmonisée sur chaque schéma.
 const VB_MARGIN_TOP  = 340; // espace au-dessus du visuel pour les étiquettes haut (agrandi pour 2 lignes)
 const VB_MARGIN_BOT  = 340; // espace en dessous pour les étiquettes bas (agrandi pour 2 lignes)
 const LBL_H          = 74;  // hauteur d'une étiquette à une seule ligne (repli, unités vb)
@@ -231,6 +262,12 @@ const LBL_FONT1      = 54;  // taille police ligne 1 (nom du contrôle physique)
 const LBL_FONT2      = 54;  // taille police ligne 2 (nom du paramètre, en majuscules) — harmonisée avec LBL_FONT
 const LBL_CORNER     = 14;  // rayon coin arrondi
 const LBL_TIER_GAP   = 34;  // écart vertical entre étages de lignes pour éviter les chevauchements
+const LBL_GAP_EDGE   = 20;  // écart entre le bord de la marge réservée et le haut/bas de l'étiquette
+const LBL_PAD_TOP    = 16;  // padding interne haut, avant la 1ère ligne de texte
+const LBL_PAD_BOTTOM = 26;  // padding interne bas, sous la dernière ligne (cas 3 lignes)
+const LBL_TIER_START = 22;  // écart entre le bord de l'étiquette et le démarrage du 1er étage de trait
+const ROW_GAP         = 22; // écart horizontal minimal entre deux étiquettes voisines d'une même rangée
+const LBL_MIN_W       = 120;// largeur minimale d'étiquette (repli si le texte est très court)
 function positionAnnotations(){
   const viewWrapId=currentView==='front'?'svg-real-wrap':currentView==='back'?'svg-back-wrap':'svg-lens-wrap';
   const wrap=document.getElementById(viewWrapId);
@@ -247,10 +284,18 @@ function positionAnnotations(){
   const isDark=document.documentElement.getAttribute('data-theme')!=='light';
   const vb=VIEW_VIEWBOX[currentView];
   const VBW=vb.w,VBH=vb.h;
-  const VBY0=-VB_MARGIN_TOP,VBH2=VBH+VB_MARGIN_TOP+VB_MARGIN_BOT;
+  const realSvg=wrap.querySelector('svg');
+  // ── Facteur d'harmonisation de taille pour la vue courante (mesure live, cf. explication ci-dessus) ──
+  const LS=labelScaleForView(currentView,wrap,realSvg,VBW);
+  const marginTop=VB_MARGIN_TOP*LS, marginBot=VB_MARGIN_BOT*LS;
+  const lblH=LBL_H*LS, lblH3=LBL_H3*LS, padX=LBL_PAD_X*LS;
+  const font=LBL_FONT*LS, font1=LBL_FONT1*LS, font2=LBL_FONT2*LS;
+  const corner=LBL_CORNER*LS, tierGap=LBL_TIER_GAP*LS;
+  const gapEdge=LBL_GAP_EDGE*LS, padTop=LBL_PAD_TOP*LS, padBottom=LBL_PAD_BOTTOM*LS, tierStart=LBL_TIER_START*LS;
+  const rowGap=ROW_GAP*LS, minLblW=LBL_MIN_W*LS;
+  const VBY0=-marginTop,VBH2=VBH+marginTop+marginBot;
   const topIds=active.filter(id=>CONTROL_COORDS[id].slot==='top');
   const botIds=active.filter(id=>CONTROL_COORDS[id].slot==='bottom');
-  const realSvg=wrap.querySelector('svg');
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('class','anno-overlay-svg');
   svg.setAttribute('viewBox',`0 ${VBY0} ${VBW} ${VBH2}`);
@@ -273,14 +318,14 @@ function positionAnnotations(){
     svg.setAttribute('style',
       `position:absolute;pointer-events:none;overflow:visible;z-index:4;`+
       `left:${imgRect.left-wrapRect.left}px;`+
-      `top:${(imgRect.top-wrapRect.top)-VB_MARGIN_TOP*scale}px;`+
+      `top:${(imgRect.top-wrapRect.top)-marginTop*scale}px;`+
       `width:${imgRect.width}px;`+
       `height:${VBH2*scale}px;`);
     // Réserve de l'espace vertical autour du cadre pour que les étiquettes qui
     // débordent (au-dessus/en-dessous, cf. overflow:visible sur .svg-wrap) ne
     // chevauchent pas les éléments voisins (onglets, légende...).
-    wrap.style.marginTop=(VB_MARGIN_TOP*scale+16)+'px';
-    wrap.style.marginBottom=(VB_MARGIN_BOT*scale+16)+'px';
+    wrap.style.marginTop=(marginTop*scale+16)+'px';
+    wrap.style.marginBottom=(marginBot*scale+16)+'px';
   }
   syncOverlayGeometry();
   if(window.ResizeObserver){
@@ -325,12 +370,12 @@ function positionAnnotations(){
     const paramLine=pval&&pval.value?paramName.toUpperCase():null;
     const valueLine=pval&&pval.value?pval.value:null;
     const hasValue=!!valueLine;
-    const boxH=hasValue?LBL_H3:LBL_H;
-    const line1W=label.length*LBL_FONT1*0.56;
-    const line2W=hasValue?paramLine.length*LBL_FONT2*0.56:0;
-    const line3W=hasValue?valueLine.length*LBL_FONT*0.52:0;
-    const txtW=Math.max(line1W,line2W,line3W,120);
-    const lblW=txtW+LBL_PAD_X*2;
+    const boxH=hasValue?lblH3:lblH;
+    const line1W=label.length*font1*0.56;
+    const line2W=hasValue?paramLine.length*font2*0.56:0;
+    const line3W=hasValue?valueLine.length*font*0.52:0;
+    const txtW=Math.max(line1W,line2W,line3W,minLblW);
+    const lblW=txtW+padX*2;
     return{id,px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW};
   }
 
@@ -338,13 +383,12 @@ function positionAnnotations(){
   // Chaque étiquette vise le x de sa propre ancre ; en cas de chevauchement avec
   // sa voisine (largeurs réelles, pas une répartition fixe en tiers), on la pousse
   // vers la droite, puis on ramène l'ensemble dans le cadre si besoin.
-  const ROW_GAP=22;
   function resolveRow(ids){
     const items=ids.map(buildLabelData).sort((a,b)=>a.px-b.px);
     items.forEach(it=>{it.centerX=Math.min(VBW-10-it.lblW/2,Math.max(10+it.lblW/2,it.px));});
     for(let i=1;i<items.length;i++){
       const prev=items[i-1],cur=items[i];
-      const minCenter=prev.centerX+prev.lblW/2+ROW_GAP+cur.lblW/2;
+      const minCenter=prev.centerX+prev.lblW/2+rowGap+cur.lblW/2;
       if(cur.centerX<minCenter) cur.centerX=minCenter;
     }
     const last=items[items.length-1];
@@ -354,7 +398,7 @@ function positionAnnotations(){
         items.forEach(it=>it.centerX-=overflow);
         for(let i=items.length-2;i>=0;i--){
           const next=items[i+1],cur=items[i];
-          const maxCenter=next.centerX-next.lblW/2-ROW_GAP-cur.lblW/2;
+          const maxCenter=next.centerX-next.lblW/2-rowGap-cur.lblW/2;
           if(cur.centerX>maxCenter) cur.centerX=maxCenter;
         }
       }
@@ -367,59 +411,59 @@ function positionAnnotations(){
     const{px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW,centerX}=it;
     const lblX0=centerX-lblW/2;
     const lblCX=centerX;
-    const lblY0=fromTop?VBY0+20:VBH+VB_MARGIN_BOT-boxH-20;
+    const lblY0=fromTop?VBY0+gapEdge:VBH+marginBot-boxH-gapEdge;
     const lblCY=lblY0+boxH/2;
     // Fond étiquette
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
     rect.setAttribute('x',lblX0);rect.setAttribute('y',lblY0);rect.setAttribute('width',lblW);rect.setAttribute('height',boxH);
-    rect.setAttribute('rx',LBL_CORNER);rect.setAttribute('fill',isDark?'rgba(10,12,16,.9)':'rgba(250,248,244,.93)');
+    rect.setAttribute('rx',corner);rect.setAttribute('fill',isDark?'rgba(10,12,16,.9)':'rgba(250,248,244,.93)');
     rect.setAttribute('stroke',col);rect.setAttribute('stroke-width','4');
     svg.appendChild(rect);
     // Texte
     if(hasValue){
       // Ligne 1 — nom du contrôle physique, discret, en haut de l'étiquette
       const txt1=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt1.setAttribute('x',lblCX);txt1.setAttribute('y',lblY0+16+LBL_FONT1*0.8);
+      txt1.setAttribute('x',lblCX);txt1.setAttribute('y',lblY0+padTop+font1*0.8);
       txt1.setAttribute('text-anchor','middle');
       txt1.setAttribute('font-family','Inter,system-ui,sans-serif');
-      txt1.setAttribute('font-size',LBL_FONT1);txt1.setAttribute('font-weight','600');
+      txt1.setAttribute('font-size',font1);txt1.setAttribute('font-weight','600');
       txt1.setAttribute('fill',isDark?'rgba(232,242,248,.65)':'rgba(20,20,20,.68)');
       txt1.textContent=label;
       svg.appendChild(txt1);
       // Ligne 2 — nom du PARAMÈTRE, en majuscules, taille intermédiaire
       const txt2=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt2.setAttribute('x',lblCX);txt2.setAttribute('y',lblY0+16+LBL_FONT1+LBL_FONT2*0.85);
+      txt2.setAttribute('x',lblCX);txt2.setAttribute('y',lblY0+padTop+font1+font2*0.85);
       txt2.setAttribute('text-anchor','middle');
       txt2.setAttribute('font-family','Inter,system-ui,sans-serif');
-      txt2.setAttribute('font-size',LBL_FONT2);txt2.setAttribute('font-weight','700');
+      txt2.setAttribute('font-size',font2);txt2.setAttribute('font-weight','700');
       txt2.setAttribute('fill',col);
       txt2.setAttribute('letter-spacing','.5');
       txt2.textContent=paramLine;
       svg.appendChild(txt2);
       // Ligne 3 — VALEUR du réglage, mise en avant (couleur du paramètre, gras, plus grand)
       const txt3=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt3.setAttribute('x',lblCX);txt3.setAttribute('y',lblY0+boxH-26);
+      txt3.setAttribute('x',lblCX);txt3.setAttribute('y',lblY0+boxH-padBottom);
       txt3.setAttribute('text-anchor','middle');
       txt3.setAttribute('font-family','Inter,system-ui,sans-serif');
-      txt3.setAttribute('font-size',LBL_FONT);txt3.setAttribute('font-weight','700');
+      txt3.setAttribute('font-size',font);txt3.setAttribute('font-weight','700');
       txt3.setAttribute('fill',col);
       txt3.textContent=valueLine;
       svg.appendChild(txt3);
     }else{
       // Repli : uniquement le nom du contrôle (aucun paramètre actif identifié)
       const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt.setAttribute('x',lblCX);txt.setAttribute('y',lblCY+LBL_FONT*0.38);
+      txt.setAttribute('x',lblCX);txt.setAttribute('y',lblCY+font*0.38);
       txt.setAttribute('text-anchor','middle');
       txt.setAttribute('font-family','Inter,system-ui,sans-serif');
-      txt.setAttribute('font-size',LBL_FONT);txt.setAttribute('font-weight','700');
+      txt.setAttribute('font-size',font);txt.setAttribute('font-weight','700');
       txt.setAttribute('fill',col);
       txt.textContent=label;
       svg.appendChild(txt);
     }
     // Trait — chaque étiquette a son propre "étage" horizontal (tier) pour que
     // les lignes ne se superposent jamais, même si elles se croisent.
-    const tierBase=fromTop?(VBY0+20+boxH+22):(VBH+22);
-    const midY=tierBase+(tierIdx||0)*LBL_TIER_GAP;
+    const tierBase=fromTop?(VBY0+gapEdge+boxH+tierStart):(VBH+tierStart);
+    const midY=tierBase+(tierIdx||0)*tierGap;
     const tStartY=fromTop?lblY0+boxH:lblY0;
     const line=document.createElementNS('http://www.w3.org/2000/svg','path');
     line.setAttribute('d',`M ${lblCX} ${tStartY} L ${lblCX} ${midY} L ${px} ${midY} L ${px} ${py}`);
@@ -427,7 +471,8 @@ function positionAnnotations(){
     line.setAttribute('stroke-width','4');line.setAttribute('stroke-dasharray','10 6');
     line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.75');
     svg.appendChild(line);
-    // Point
+    // Point — taille fixe (repère de position sur la photo), volontairement non affecté
+    // par le facteur d'harmonisation LS qui ne concerne que les étiquettes elles-mêmes.
     const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
     ring.setAttribute('cx',px);ring.setAttribute('cy',py);ring.setAttribute('r',22);
     ring.setAttribute('fill','none');ring.setAttribute('stroke',col);ring.setAttribute('stroke-width','5');ring.setAttribute('opacity','.4');
