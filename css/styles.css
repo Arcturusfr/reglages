@@ -2,6 +2,7 @@
     /* 2026-09-07 22:05 (Paris) — V015 — Ajout de #svg-lens-wrap{max-width:50%} pour réduire de moitié l'emprise visuelle de la vue objectif (viewBox carré, trop imposant face aux 2 autres schémas rectangulaires). Aucune autre règle modifiée ni supprimée. */
     /* 2026-09-08 23:39 (Paris) — V016 — La règle générique .schema-views-col .svg-wrap{max-width:100%} du mode agrandi écrasait #svg-lens-wrap{max-width:50%} (spécificité CSS plus élevée), rendant la vue objectif trop grande une fois le drawer déplié. Ajout d'une règle plus spécifique .bottom-sheet.expanded ... #svg-lens-wrap{max-width:80%} pour la réduire d'environ 20% dans ce contexte précis. */
     /* 2026-09-09 (Paris) — V018 — Correction : 80% en mode agrandi restait ~2× plus grand que la taille de référence en mode normal (colonne de ~454px en agrandi vs ~184px de large réel en mode normal, à cause de la colonne 2/3 qui est elle-même bien plus large que le drawer non-agrandi). Passage de 80% à 40% pour retrouver une taille en pixels réels comparable entre les deux modes. Vérifié via DevTools que la règle .bottom-sheet.expanded ... #svg-lens-wrap est bien celle qui s'applique (spécificité confirmée correcte, seul le ratio était insuffisant). */
+    /* 2026-09-11 (Paris) — V019 — Ajustement visuel demandé après vérification à l'écran : le schéma objectif en mode drawer agrandi était devenu trop petit à 40%. Passage de 40% à 50% (règle .bottom-sheet.expanded #dtab-schema.active .schema-views-col #svg-lens-wrap) pour un meilleur confort de lecture, sans toucher au mode normal (déjà à 50% via la règle #svg-lens-wrap générique, inchangée). */
     :root,[data-theme="dark"]{
       --bg-deep:#07090d;--bg-card:#0e1118;--bg-glass:rgba(14,17,24,.93);
       --bg-param:rgba(255,255,255,.04);--bg-popup:#0e1118;
@@ -344,7 +345,7 @@
     /* Vue objectif encore trop imposante en mode drawer agrandi (la règle générique
        ci-dessus la remet à 100% de la colonne, ce qui écrase le #svg-lens-wrap{max-width:50%}
        du mode normal) : réduction ciblée d'environ 20% supplémentaires, uniquement en agrandi. */
-    .bottom-sheet.expanded #dtab-schema.active .schema-views-col #svg-lens-wrap{max-width:40%}
+    .bottom-sheet.expanded #dtab-schema.active .schema-views-col #svg-lens-wrap{max-width:50%}
     /* En dessous de cette largeur, le 2-colonnes redevient trop étroit (ex. ZFold replié) : on repasse en 1 colonne empilée */
     @media(max-width:560px){
       .bottom-sheet.expanded #dtab-schema.active{flex-direction:column}
