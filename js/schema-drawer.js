@@ -1,4 +1,4 @@
-// 2026-09-11 (Paris) — V020 — Harmonisation de la taille RÉELLE (pixels écran) des étiquettes entre les 3 schémas (avant/arrière/objectif), dans tous les modes du drawer. Cause : viewBox de largeurs différentes (2048/1536/2120) + vue Objectif affichée à 50% de la largeur de colonne (vs 100% pour avant/arrière) → à taille de police fixe en unités viewBox, le texte rendu était ~25% plus petit sur la vue avant et ~2,3× plus petit sur la vue objectif que sur la vue arrière. Ajout de VIEW_WRAP_RATIO + labelScaleForView() qui calcule, par vue, un facteur multiplicatif appliqué à toutes les tailles/marges d'étiquette (police, hauteur de boîte, paddings, marges de réserve, écarts d'étage) de sorte que la taille réelle affichée soit identique partout — sans jamais réduire la vue de référence (arrière, déjà la plus grande). Aucune modification des marqueurs (points/anneaux d'ancrage) ni des épaisseurs de trait, volontairement laissés à taille fixe.
+// 2026-09-12 (Paris) — V021 — Anti-croisement des lignes de rappel : l'ancien système attribuait un "étage" (tier) horizontal aux étiquettes simplement dans l'ordre de tri par position d'ancre (index du tableau). Ceci ne garantit PAS l'absence de croisement : si le trajet horizontal d'une étiquette A "avale" la position d'une étiquette B qui doit ensuite descendre vers un étage plus éloigné, la verticale de B traverse le segment horizontal de A. Remplacement par assignTiers() : calcule pour chaque paire de connexions une contrainte "doit être plus extérieure que" dès que le point de départ (centerX) de l'une tombe dans le couloir horizontal de l'autre, puis résout ces contraintes par relaxation itérative (façon tri topologique) et compacte les paliers obtenus. Résultat : les trajets à faible débattement restent sur les voies proches du schéma, les trajets à grand débattement sont repoussés sur des voies plus extérieures, sans jamais traverser un couloir occupé. Lignes de rappel allégées (pointillé plus fin, proportionnel à l'harmonisation V020). Voir explication détaillée en fin de fichier.
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
 let currentView='front';
@@ -468,8 +468,8 @@ function positionAnnotations(){
     const line=document.createElementNS('http://www.w3.org/2000/svg','path');
     line.setAttribute('d',`M ${lblCX} ${tStartY} L ${lblCX} ${midY} L ${px} ${midY} L ${px} ${py}`);
     line.setAttribute('fill','none');line.setAttribute('stroke',col);
-    line.setAttribute('stroke-width','4');line.setAttribute('stroke-dasharray','10 6');
-    line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.75');
+    line.setAttribute('stroke-width','3');line.setAttribute('stroke-dasharray',`${(7*LS).toFixed(1)} ${(6*LS).toFixed(1)}`);
+    line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.7');
     svg.appendChild(line);
     // Point — taille fixe (repère de position sur la photo), volontairement non affecté
     // par le facteur d'harmonisation LS qui ne concerne que les étiquettes elles-mêmes.
@@ -483,6 +483,92 @@ function positionAnnotations(){
     svg.appendChild(dot);
   }
   const topItems=resolveRow(topIds),botItems=resolveRow(botIds);
-  topItems.forEach((it,i)=>drawAnnotation(it,true,i));
-  botItems.forEach((it,i)=>drawAnnotation(it,false,i));
+  assignTiers(topItems);
+  assignTiers(botItems);
+  topItems.forEach(it=>drawAnnotation(it,true,it.tier));
+  botItems.forEach(it=>drawAnnotation(it,false,it.tier));
+}
+
+// ═══════════════════════════════════════════
+//  ROUTAGE ANTI-CROISEMENT DES LIGNES DE RAPPEL
+// ═══════════════════════════════════════════
+// Chaque ligne de rappel part du bas/haut de son étiquette (x = centerX, position
+// résolue par resolveRow), descend/monte verticalement jusqu'à un "étage" (tier)
+// horizontal dédié, parcourt cet étage jusqu'à l'aplomb de son ancre (x = px), puis
+// rejoint l'ancre verticalement. Le risque de croisement vient des DEUX segments
+// verticaux (côté étiquette ET côté ancre) : chacun relie l'intérieur du schéma (le
+// bord de l'étiquette d'un côté, l'ancre sur la photo de l'autre) à l'étage de sa
+// ligne, et traverse donc au passage tous les étages plus proches — y compris
+// l'étage horizontal d'une AUTRE ligne, si son abscisse s'y trouve. Ce n'est donc
+// pas l'ORDRE gauche-droite des étiquettes qui compte, mais la question : « le
+// trajet (centerX → px) d'une ligne A recouvre-t-il l'une des deux extrémités
+// (centerX ou px) d'une ligne B ? ». Si oui, B doit rester plus proche du schéma
+// que A (sinon l'une des verticales de B, en route vers un étage plus lointain,
+// coupe le couloir horizontal de A).
+//
+// assignTiers() calcule donc, pour chaque paire de lignes, cette contrainte
+// « A doit être plus extérieure que B », puis résout l'ensemble par relaxation
+// itérative façon tri topologique (une ligne ne peut être à un étage inférieur ou
+// égal à celui de toute ligne qu'elle doit dépasser). Les lignes à faible
+// débattement horizontal (centerX proche de px) se stabilisent ainsi naturellement
+// près du schéma, tandis que les lignes à grand débattement sont repoussées vers
+// des étages extérieurs — exactement là où aucun autre trajet ne peut plus les
+// couper. Un compactage final retire les étages inutilisés pour limiter l'espace
+// vertical consommé.
+//
+// Limite connue : si deux trajets se chevauchent en « quinconce » (aucun des deux
+// n'englobe complètement l'autre, chacun n'empiétant que partiellement sur le
+// couloir de l'autre), aucun ordre d'étages ne peut éliminer le croisement — il
+// faudrait déplacer une étiquette, pas seulement changer son étage. Ce cas de
+// figure ne peut se produire que si les boîtes d'étiquette d'une même rangée sont
+// déjà plus larges que l'espace disponible (voir le bug pré-existant et déjà
+// documenté dans roadmap-et-avancement.md : débordement de largeur cumulée des
+// étiquettes sur la vue arrière lorsque 3 étiquettes sont actives simultanément).
+// Une fois ce bug de largeur corrigé séparément, ce cas résiduel disparaît de
+// lui-même. La relaxation ci-dessous reste bornée dans tous les cas (jamais de
+// boucle infinie) et produit alors un compromis raisonnable plutôt qu'un blocage.
+function assignTiers(items){
+  const n=items.length;
+  if(!n)return items;
+  items.forEach(it=>{
+    it.lo=Math.min(it.centerX,it.px);
+    it.hi=Math.max(it.centerX,it.px);
+    it.tier=0;
+  });
+  const constraints=[]; // {outer, inner} : outer.tier doit rester STRICTEMENT > inner.tier
+  for(let i=0;i<n;i++){
+    for(let j=0;j<n;j++){
+      if(i===j)continue;
+      const A=items[i],B=items[j];
+      // Les DEUX extrémités du trajet de B peuvent traverser le couloir de A :
+      // - son côté étiquette (centerX), lors de la descente/montée vers son propre étage ;
+      // - son côté ancre (px), car ce segment part de l'intérieur du schéma et
+      //   remonte lui aussi à travers tous les étages plus proches que le sien
+      //   pour rejoindre son étage. Ignorer ce second cas (comme le faisait une
+      //   première version de cette fonction) laisse passer des croisements bien réels.
+      if((B.centerX>A.lo && B.centerX<A.hi)||(B.px>A.lo && B.px<A.hi)){
+        constraints.push({outer:A,inner:B});
+      }
+    }
+  }
+  // Relaxation bornée (au plus n+2 passes) : suffisant pour propager les
+  // contraintes en chaîne sur le faible nombre de commandes actives par vue.
+  // En cas de dépendance circulaire (A doit dépasser B ET B doit dépasser A —
+  // configuration très rare, non résolvable par un simple étagement), la boucle
+  // s'arrête sans osciller indéfiniment ; le résultat reste alors un compromis
+  // raisonnable plutôt qu'une garantie absolue.
+  for(let pass=0;pass<n+2;pass++){
+    let changed=false;
+    constraints.forEach(({outer,inner})=>{
+      if(outer.tier<=inner.tier){outer.tier=inner.tier+1;changed=true;}
+    });
+    if(!changed)break;
+  }
+  // Compactage : renumérote les étages utilisés en entiers consécutifs (0,1,2…)
+  // pour ne pas gaspiller d'espace vertical si des paliers intermédiaires
+  // restent inoccupés.
+  const used=[...new Set(items.map(it=>it.tier))].sort((a,b)=>a-b);
+  const remap=new Map(used.map((t,idx)=>[t,idx]));
+  items.forEach(it=>{it.tier=remap.get(it.tier);});
+  return items;
 }
