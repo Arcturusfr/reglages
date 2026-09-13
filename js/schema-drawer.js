@@ -1,3 +1,4 @@
+// 2026-09-13 (Paris) — V022 — Correction de l'aspect ratio de la vue Objectif : VIEW_VIEWBOX.lens passe de {w:2120,h:2120} (carré, déformant) à {w:3180,h:2120} (~3:2), et VIEW_MAX_WIDTH_RATIO.lens repasse de 0.5 à 1 puisque le schéma n'a plus besoin d'être réduit de moitié pour compenser une hauteur excessive. Voir index.html (<g id="lens-hscale-fix">) et css/styles.css (#svg-lens-wrap) pour le reste de la correction.
 // 2026-09-12 (Paris) — V021 — Anti-croisement des lignes de rappel : l'ancien système attribuait un "étage" (tier) horizontal aux étiquettes simplement dans l'ordre de tri par position d'ancre (index du tableau). Ceci ne garantit PAS l'absence de croisement : si le trajet horizontal d'une étiquette A "avale" la position d'une étiquette B qui doit ensuite descendre vers un étage plus éloigné, la verticale de B traverse le segment horizontal de A. Remplacement par assignTiers() : calcule pour chaque paire de connexions une contrainte "doit être plus extérieure que" dès que le point de départ (centerX) de l'une tombe dans le couloir horizontal de l'autre, puis résout ces contraintes par relaxation itérative (façon tri topologique) et compacte les paliers obtenus. Résultat : les trajets à faible débattement restent sur les voies proches du schéma, les trajets à grand débattement sont repoussés sur des voies plus extérieures, sans jamais traverser un couloir occupé. Lignes de rappel allégées (pointillé plus fin, proportionnel à l'harmonisation V020). Voir explication détaillée en fin de fichier.
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
 let currentAnnotations={front:[],back:[],lens:[]};
@@ -218,7 +219,7 @@ function buildControlCards(params){
 const VIEW_VIEWBOX={
   front:{w:2048,h:1365},
   back: {w:1536,h:864}, // FaceArr_vector.svg (nouveau schéma arrière)
-  lens: {w:2120,h:2120},
+  lens: {w:3180,h:2120}, // V022 : 2120×2120 d'origine ×1.5 en largeur — cf. <g id="lens-hscale-fix"> dans index.html (correction de la compression horizontale de l'objectif)
 };
 // ── Harmonisation de la taille RÉELLE (pixels écran) des étiquettes entre les 3 vues ──
 // Les 3 schémas ont des viewBox de largeurs différentes (2048/1536/2120) et ne sont pas
@@ -235,7 +236,7 @@ const VIEW_VIEWBOX={
 // jamais réduite) dans la même colonne, puis le facteur exact à appliquer à toutes les
 // tailles/marges d'étiquette (unités viewBox) pour une taille réelle identique entre les 3
 // vues, y compris si le padding CSS du wrapper change plus tard.
-const VIEW_MAX_WIDTH_RATIO={front:1,back:1,lens:0.5};
+const VIEW_MAX_WIDTH_RATIO={front:1,back:1,lens:1}; // V022 : lens repassé à 1 (100%) — l'ancien 0.5 compensait la hauteur excessive du viewBox carré d'origine ; le viewBox objectif étant désormais correctement proportionné (~3:2, comme la vue avant), il n'a plus besoin d'être réduit de moitié. Resynchroniser avec css/styles.css (#svg-lens-wrap) si cette valeur change.
 const LABEL_REF_VIEW='back';
 function labelScaleForView(view,wrapEl,realSvgEl,vbw){
   const wrapRect=wrapEl&&wrapEl.getBoundingClientRect();
