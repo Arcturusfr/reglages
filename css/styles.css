@@ -3,6 +3,8 @@
     /* 2026-09-08 23:39 (Paris) — V016 — La règle générique .schema-views-col .svg-wrap{max-width:100%} du mode agrandi écrasait #svg-lens-wrap{max-width:50%} (spécificité CSS plus élevée), rendant la vue objectif trop grande une fois le drawer déplié. Ajout d'une règle plus spécifique .bottom-sheet.expanded ... #svg-lens-wrap{max-width:80%} pour la réduire d'environ 20% dans ce contexte précis. */
     /* 2026-09-09 (Paris) — V018 — Correction : 80% en mode agrandi restait ~2× plus grand que la taille de référence en mode normal (colonne de ~454px en agrandi vs ~184px de large réel en mode normal, à cause de la colonne 2/3 qui est elle-même bien plus large que le drawer non-agrandi). Passage de 80% à 40% pour retrouver une taille en pixels réels comparable entre les deux modes. Vérifié via DevTools que la règle .bottom-sheet.expanded ... #svg-lens-wrap est bien celle qui s'applique (spécificité confirmée correcte, seul le ratio était insuffisant). */
     /* 2026-09-11 (Paris) — V019 — Ajustement visuel demandé après vérification à l'écran : le schéma objectif en mode drawer agrandi était devenu trop petit à 40%. Passage de 40% à 50% (règle .bottom-sheet.expanded #dtab-schema.active .schema-views-col #svg-lens-wrap) pour un meilleur confort de lecture, sans toucher au mode normal (déjà à 50% via la règle #svg-lens-wrap générique, inchangée). */
+    /* 2026-09-14 (Paris) — V023 — Vue Objectif agrandie de 20% : #svg-lens-wrap passe de max-width:100% à 120% (normal ET mode agrandi), en cohérence avec VIEW_MAX_WIDTH_RATIO.lens=1.2 dans js/schema-drawer.js (nécessaire pour que l'harmonisation des étiquettes reste juste). */
+    /* 2026-09-13 (Paris) — V022 — Correction de la déformation de la vue Objectif : voir commentaires détaillés au niveau de #svg-lens-wrap et de la règle .bottom-sheet.expanded ...#svg-lens-wrap plus bas dans ce fichier, ainsi que index.html et js/schema-drawer.js. */
     :root,[data-theme="dark"]{
       --bg-deep:#07090d;--bg-card:#0e1118;--bg-glass:rgba(14,17,24,.93);
       --bg-param:rgba(255,255,255,.04);--bg-popup:#0e1118;
@@ -188,10 +190,15 @@
     .svg-wrap{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 8px;overflow:visible;position:relative}
     [data-theme="light"] .svg-wrap{background:rgba(0,0,0,.03)}
     .svg-wrap svg{width:100%;height:auto;display:block}
-    /* Vue objectif : viewBox carré (2120×2120) beaucoup plus "haut" à l'écran que les
-       vues avant/arrière (rectangulaires) — on réduit son emprise visuelle de moitié
-       et on la centre, pour une échelle cohérente avec les 2 autres schémas. */
-    #svg-lens-wrap{max-width:50%;margin:0 auto}
+    /* 2026-09-13 (Paris) — V022 — La vue objectif était réduite à 50% de largeur pour
+       compenser un viewBox carré (2120×2120), beaucoup plus "haut" à l'écran que les vues
+       avant/arrière rectangulaires. Le SVG objectif étant désormais corrigé à la source
+       (index.html, <g id="lens-hscale-fix" transform="scale(1.5,1)"> + viewBox 3180×2120,
+       ratio ~3:2 cohérent avec la vue avant), cette réduction n'a plus lieu d'être : le
+       schéma occupe maintenant 100% comme les 2 autres vues (règle générique .svg-wrap svg
+       ci-dessus). Règle conservée ici, neutralisée à max-width:100%, pour rester le point
+       unique à ajuster si le facteur d'échelle de index.html est un jour modifié. */
+    #svg-lens-wrap{max-width:120%;margin:0 auto}
     /* Points d'annotation animés sur le SVG */
     /* ── Annotations SVG intégrées ── */
     .anno-wrap{width:100%}
@@ -342,10 +349,11 @@
       gap:8px;
     }
     .bottom-sheet.expanded #dtab-schema.active .schema-views-col .svg-wrap{max-width:100%}
-    /* Vue objectif encore trop imposante en mode drawer agrandi (la règle générique
-       ci-dessus la remet à 100% de la colonne, ce qui écrase le #svg-lens-wrap{max-width:50%}
-       du mode normal) : réduction ciblée d'environ 20% supplémentaires, uniquement en agrandi. */
-    .bottom-sheet.expanded #dtab-schema.active .schema-views-col #svg-lens-wrap{max-width:50%}
+    /* 2026-09-13 (Paris) — V022 — Idem ci-dessus : la vue objectif étant désormais
+       correctement proportionnée à la source (index.html), elle n'a plus besoin d'une
+       réduction spécifique en mode drawer agrandi ; elle suit la règle générique 100%
+       comme avant/arrière. Règle conservée à titre de point d'ajustement unique. */
+    .bottom-sheet.expanded #dtab-schema.active .schema-views-col #svg-lens-wrap{max-width:120%}
     /* En dessous de cette largeur, le 2-colonnes redevient trop étroit (ex. ZFold replié) : on repasse en 1 colonne empilée */
     @media(max-width:560px){
       .bottom-sheet.expanded #dtab-schema.active{flex-direction:column}
