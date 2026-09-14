@@ -1,4 +1,4 @@
-Version 2026-09-13 22:05 (Europe/Paris)
+Version 2026-09-14 01:05 (Europe/Paris)
 
 ## Important ##
 
@@ -22,8 +22,10 @@ Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre v
 
 Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architecture est prévue pour accueillir d'autres modes plus tard sans réécriture.
 
+- ✅ **Contrôles réels de la vue Objectif — correction (2026-09-14)** — `CONTROL_COORDS.lens` (js/schema-data.js) listait `switch-ois` et `switch-af-mf`, qui ne correspondent pas aux 5 contrôles réels du Fujinon XF70-300mm (vérifiés avec l'utilisateur) : bague de mise au point, bague de zoom, bague des ouvertures, sélecteur de plage MAP (Full / 5m-∞), commutateur de mode d'ouverture (A / Bague). Ces deux entrées inutilisées (aucune séquence de `CONTROL_SEQUENCES` ne les référençait) ont été remplacées par `switch-focus-range` et `switch-aperture-mode`. Positions toujours en % (repli, non ancrées). L'outil `editeur-ancres-vue-objectif.html` a été créé (sur le modèle de `editeur-ancres-vue-avant.html`) avec ces 5 contrôles et le viewBox corrigé V022 (`0 0 3180 2120`), prêt pour la prochaine étape d'ancrage natif — voir point 1 ci-dessous pour la contrainte de coordonnées à respecter en l'utilisant.
+
 ## Prochaines étapes immédiates
-1. **Vue Objectif** — la compression horizontale est corrigée (V022, voir ci-dessus). Reste : ancrage natif du schéma (poser des `<circle id="anchor-...">` réels comme pour avant/arrière, en remplacement du secours en %) via l'outil `editeur-ancres-vue-objectif.html` — cet outil devra utiliser le même viewBox corrigé (`0 0 3180 2120`) et le même wrapper `<g transform="scale(1.5,1)">` que index.html pour que les ancres posées correspondent au rendu réel affiché à l'utilisateur.
+1. **Vue Objectif** — la compression horizontale est corrigée (V022, voir ci-dessus) et l'outil `editeur-ancres-vue-objectif.html` est prêt (voir ci-dessus). Reste à faire : poser réellement les 5 ancres avec cet outil, puis coller le code généré dans index.html. ⚠️ Les ancres générées sont en coordonnées finales (viewBox 3180×2120) et doivent être collées **juste après `</g>`** (fin de `lens-hscale-fix`), **jamais à l'intérieur** du groupe `scale(1.5,1)` — sinon elles seraient décalées horizontalement d'un facteur 1.5 par rapport aux contrôles réels, `schema-drawer.js` lisant l'attribut cx/cy brut sans tenir compte d'un transform parent. Une fois les ancres posées, raccorder `ring-focus`, `switch-focus-range` et `switch-aperture-mode` à des séquences dans `CONTROL_SEQUENCES`/`PARAM_TO_CONTROLS_V3` (actuellement déclarés dans `CONTROL_COORDS` mais pas encore utilisés par aucun paramètre — cf. commentaire ajouté dans schema-data.js).
 3. **Puis insérer une image du contrôle dans chaque étiquette** (évolution encore en réflexion côté utilisateur).
 4. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
 5. **Puis les vignettes cliquables** en remplacement des onglets actuels (à voir, finalement les onglets sont peut-être satisfaisants).
