@@ -1,19 +1,12 @@
-// 2026-09-14 01:05 (Paris) — V023 — CONTROL_COORDS.lens corrigé pour coller aux contrôles
-// réels du Fujinon XF70-300mm : suppression de switch-ois et switch-af-mf (ne font pas
-// partie des 5 contrôles réels de cet objectif), ajout de switch-focus-range (sélecteur
-// de plage de mise au point Full / 5m-∞) et switch-aperture-mode (commutateur mode
-// ouverture : Automatique via le boîtier / Manuel via la bague). Les 3 bagues existantes
-// (ouverture, mise au point, zoom) sont inchangées. Toutes les coordonnées lens restent
-// en % (repli, non ancrées nativement) — voir editeur-ancres-vue-objectif.html (nouvel
-// outil, à jour avec ces 5 contrôles et le viewBox 3180×2120 post-V022) pour la prochaine
-// étape d'ancrage natif.
+// 2026-09-14 15:42 (Paris) — V023 — Libellé 'Molette vitesse' renommé en 'Molette arrière' (CONTROL_COORDS.dial-shutter, CONTROL_SEQUENCES.vitesse, PARAM_ACTION.Vitesse)
+// 2026-09-03 15:53 (Paris) — V013 — Commentaire vue arrière mis à jour (nouveau viewBox 1536×864, FaceArr_vector.svg) — CONTROL_COORDS.back toujours en % (repli, non ancré)
 // SCHEMA DATA — coordonnées des contrôles, catégories, actions, matériel (vue caméra annotée)
 // Coordonnées par vue (% du viewBox)
 // Coordonnées par vue (% du viewBox) — utilisées en repli tant qu'une vue
 // n'a pas encore ses ancres SVG natives (voir resolveControlXY dans schema-drawer.js)
 const CONTROL_COORDS={
   // ── Vue AVANT (viewBox 2048×1365) — ancrée nativement, ces % ne servent plus que de filet de sécurité ──
-  'dial-shutter'  :{view:'front', x:27.24, y:8.09,  label:'Molette vitesse',  slot:'top'},
+  'dial-shutter'  :{view:'front', x:27.24, y:8.09,  label:'Molette arrière',  slot:'top'},
   'btn-iso'       :{view:'front', x:24.67, y:15.20, label:'Bouton ISO',       slot:'top'},
   'btn-shutter'   :{view:'front', x:19.73, y:19.93, label:'Déclencheur',      slot:'top'},
   'btn-q'         :{view:'front', x:19.14, y:13.12, label:'Bouton Q',         slot:'top'},
@@ -25,28 +18,22 @@ const CONTROL_COORDS={
   'btn-menu'      :{view:'back',  x:72,  y:42, label:'Bouton MENU',       slot:'top'},
   'btn-disp'      :{view:'back',  x:72,  y:50, label:'Bouton DISP/BACK (menu Q réduit)', slot:'bottom'},
   'btn-drive'     :{view:'back',  x:60,  y:65, label:'Bouton Drive',      slot:'bottom'}, // position approximative, à valider phase 2
-  // ── Vue OBJECTIF (viewBox 3180×2120 depuis V022, contenu réel dessiné en 2120×2120 puis
-  //    étiré ×1.5 en largeur via <g id="lens-hscale-fix">) — 5 contrôles réels du Fujinon
-  //    XF70-300mm, non encore ancrés nativement (repli en % uniquement). Correspondance
-  //    vérifiée avec l'utilisateur le 2026-09-14 : bague MAP, bague zoom, bague ouverture,
-  //    sélecteur de plage MAP (Full / 5m-∞), commutateur mode ouverture (A / Bague).
-  'ring-aperture-lens'  :{view:'lens', x:28, y:50, label:'Bague des ouvertures',                   slot:'bottom'},
-  'ring-focus'          :{view:'lens', x:48, y:50, label:'Bague de mise au point',                 slot:'bottom'},
-  'ring-zoom'           :{view:'lens', x:68, y:50, label:'Bague de zoom',                          slot:'bottom'},
-  'switch-focus-range'  :{view:'lens', x:15, y:25, label:'Sélecteur de plage MAP (Full / 5m-∞)',   slot:'top'}, // position provisoire, à ancrer nativement
-  'switch-aperture-mode':{view:'lens', x:30, y:75, label:'Commutateur mode ouverture (A / Bague)', slot:'bottom'}, // position provisoire, à ancrer nativement
+  // ── Vue OBJECTIF (viewBox 2120×2120) — inchangé, non validé ──
+  'ring-aperture-lens':{view:'lens', x:28, y:50, label:'Bague ouverture', slot:'bottom'},
+  'ring-focus'    :{view:'lens',  x:48,  y:50, label:'Bague mise au point',slot:'bottom'},
+  'ring-zoom'     :{view:'lens',  x:68,  y:50, label:'Bague zoom',        slot:'bottom'},
+  'switch-ois'    :{view:'lens',  x:22,  y:25, label:'Switch OIS',        slot:'top'},
+  'switch-af-mf'  :{view:'lens',  x:35,  y:25, label:'Switch AF/MF',      slot:'top'},
 };
 // Supprimés (n'existent pas physiquement sur le X-S20) : dial-iso, dial-drive,
 // btn-af (avant), lever-af, ring-aperture (avant), btn-q-back (doublon de btn-disp)
-// Supprimés (2026-09-14, ne font pas partie des 5 contrôles réels du Fujinon XF70-300mm) :
-// switch-ois, switch-af-mf — remplacés par switch-focus-range et switch-aperture-mode.
 
 // ═══════════════════════════════════════════
 //  SÉQUENCES DE COMMANDES — étapes ordonnées, chaque étape = 1+ options équivalentes
 // ═══════════════════════════════════════════
 const CONTROL_SEQUENCES={
   'vitesse':[
-    {options:[{view:'front', id:'dial-shutter', action:'turn', label:'Molette vitesse'}]},
+    {options:[{view:'front', id:'dial-shutter', action:'turn', label:'Molette arrière'}]},
   ],
   'iso':[
     {options:[{view:'front', id:'btn-iso', action:'press', label:'Bouton ISO'}]},
@@ -102,11 +89,6 @@ const PARAM_TO_CONTROLS_V3={
     'Durée totale'       :{sequence:'menu-only'},
     'Déclencheur'        :{sequence:'declencheur'},
     // 'Filtre' et 'Lieu' : volontairement sans séquence (accessoire / info externe, pas de commande boîtier)
-    // 'ring-focus', 'switch-focus-range' et 'switch-aperture-mode' : contrôles réels de
-    // l'objectif déclarés dans CONTROL_COORDS mais pas encore raccordés à une séquence
-    // (cf. matériel-fujifilm-XS20.md — la mise au point reste volontairement hors du
-    // système séquence/options pour l'instant, et le mode d'ouverture n'est pas encore
-    // modélisé comme un paramètre à part). À reprendre dans un fil dédié.
   },
 };
 
@@ -123,7 +105,7 @@ const PARAM_CATEGORY={
 const CAT_ICON={expo:'⊙',focus:'◎',wb:'☀',drive:'▶',misc:'◈'};
 const PARAM_ACTION={
   'Ouverture':'↻ Bague ouverture + molette avant',
-  'Vitesse':'↻ Molette vitesse (dessus)',
+  'Vitesse':'↻ Molette arrière',
   'ISO':'↻ Molette ISO (dessus)',
   'Mise au point':'⇄ Levier AF/MF + ⊙ Bouton AF-L',
   'Focale':'↻ Bague zoom objectif',

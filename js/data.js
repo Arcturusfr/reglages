@@ -1,4 +1,4 @@
-// 2026-09-07 00:00 (Paris) — V015
+// 2026-09-14 15:42 (Paris) — V023 — Libellé 'Molette vitesse' renommé en 'Molette arrière' (mapping legacy PARAM_TO_CONTROLS)
 // DONNÉES — préréglages par défaut, mapping paramètre → contrôles génériques
 // ═══════════════════════════════════════════
 //  DONNÉES PAR DÉFAUT
@@ -48,7 +48,7 @@ const DEFAULT_PRESETS=[
 // ═══════════════════════════════════════════
 const PARAM_TO_CONTROLS={
   'Ouverture'   :{top:['dial-top-front','ring-aperture'],back:[],label:'Bague ouverture + molette avant'},
-  'Vitesse'     :{top:['dial-shutter'],back:[],label:'Molette vitesse'},
+  'Vitesse'     :{top:['dial-shutter'],back:[],label:'Molette arrière'},
   'ISO'         :{top:['dial-iso'],back:[],label:'Molette ISO'},
   'Balance des blancs':{top:['btn-q'],back:['btn-q-back'],label:'Bouton Q / Menu'},
   'Mode mesure' :{top:['btn-q'],back:['btn-q-back'],label:'Bouton Q / Menu'},
