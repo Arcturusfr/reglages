@@ -1,3 +1,4 @@
+// 2026-09-14 15:42 (Paris) — V023 — (1) Libellé 'Molette vitesse'→'Molette arrière' n'affecte pas ce fichier directement (voir schema-data.js) mais la ligne de rappel est désormais tracée en épaisseur RÉELLE fixe de 2px écran (vector-effect:non-scaling-stroke) au lieu de 2/3 unités viewBox (qui donnaient une épaisseur visuelle variable et très fine selon la vue). (2) Vue Objectif agrandie de 20% : VIEW_MAX_WIDTH_RATIO.lens passe de 1 à 1.2 (à resynchroniser avec css/styles.css #svg-lens-wrap, qui passe conjointement de max-width:100% à 120%). (3) Ajout de LABEL_MANUAL_ADJUST : la correction d'aspect ratio de la vue Objectif (V022) a rendu son image visuellement plus grande dans la colonne (ratio 0.5→1, indépendamment de l'élargissement du viewBox 2120→3180), alors que labelScaleForView() maintient volontairement la taille RÉELLE des étiquettes strictement identique entre les 3 vues (par définition de l'harmonisation) — les étiquettes de la vue Objectif sont donc restées à la même taille absolue qu'avant, mais paraissent désormais visuellement petites à côté d'un schéma plus grand. LABEL_MANUAL_ADJUST.lens applique un facteur correctif manuel (indépendant de l'harmonisation automatique) pour regrossir ces étiquettes en proportion du grossissement du schéma. Valeur estimée à ajuster visuellement si besoin.
 // 2026-09-13 (Paris) — V022 — Correction de l'aspect ratio de la vue Objectif : VIEW_VIEWBOX.lens passe de {w:2120,h:2120} (carré, déformant) à {w:3180,h:2120} (~3:2), et VIEW_MAX_WIDTH_RATIO.lens repasse de 0.5 à 1 puisque le schéma n'a plus besoin d'être réduit de moitié pour compenser une hauteur excessive. Voir index.html (<g id="lens-hscale-fix">) et css/styles.css (#svg-lens-wrap) pour le reste de la correction.
 // 2026-09-12 (Paris) — V021 — Anti-croisement des lignes de rappel : l'ancien système attribuait un "étage" (tier) horizontal aux étiquettes simplement dans l'ordre de tri par position d'ancre (index du tableau). Ceci ne garantit PAS l'absence de croisement : si le trajet horizontal d'une étiquette A "avale" la position d'une étiquette B qui doit ensuite descendre vers un étage plus éloigné, la verticale de B traverse le segment horizontal de A. Remplacement par assignTiers() : calcule pour chaque paire de connexions une contrainte "doit être plus extérieure que" dès que le point de départ (centerX) de l'une tombe dans le couloir horizontal de l'autre, puis résout ces contraintes par relaxation itérative (façon tri topologique) et compacte les paliers obtenus. Résultat : les trajets à faible débattement restent sur les voies proches du schéma, les trajets à grand débattement sont repoussés sur des voies plus extérieures, sans jamais traverser un couloir occupé. Lignes de rappel allégées (pointillé plus fin, proportionnel à l'harmonisation V020). Voir explication détaillée en fin de fichier.
 // SCHEMA DRAWER — logique du drawer schéma : vues, LCD, histogramme, cartes de contrôle, annotations
@@ -236,8 +237,14 @@ const VIEW_VIEWBOX={
 // jamais réduite) dans la même colonne, puis le facteur exact à appliquer à toutes les
 // tailles/marges d'étiquette (unités viewBox) pour une taille réelle identique entre les 3
 // vues, y compris si le padding CSS du wrapper change plus tard.
-const VIEW_MAX_WIDTH_RATIO={front:1,back:1,lens:1}; // V022 : lens repassé à 1 (100%) — l'ancien 0.5 compensait la hauteur excessive du viewBox carré d'origine ; le viewBox objectif étant désormais correctement proportionné (~3:2, comme la vue avant), il n'a plus besoin d'être réduit de moitié. Resynchroniser avec css/styles.css (#svg-lens-wrap) si cette valeur change.
+const VIEW_MAX_WIDTH_RATIO={front:1,back:1,lens:1.2}; // V023 : lens passé à 1.2 (120%) pour agrandir le schéma Objectif de 20% par rapport aux 2 autres vues. Resynchroniser avec css/styles.css (#svg-lens-wrap, règle normale ET règle .bottom-sheet.expanded) si cette valeur change.
 const LABEL_REF_VIEW='back';
+// V023 : facteur correctif manuel appliqué APRÈS l'harmonisation automatique (labelScaleForView), pour compenser
+// le fait que l'harmonisation cible volontairement une taille RÉELLE (px écran) identique entre les 3 vues, alors
+// que le schéma Objectif est désormais affiché nettement plus grand que les 2 autres (agrandissement V022 + V023).
+// Sans ce correctif, ses étiquettes restent à la même taille absolue qu'avant et paraissent trop petites à côté
+// d'un schéma plus grand. Valeur estimée en cohérence avec le grossissement du schéma — à ajuster visuellement.
+const LABEL_MANUAL_ADJUST={front:1,back:1,lens:1.3};
 function labelScaleForView(view,wrapEl,realSvgEl,vbw){
   const wrapRect=wrapEl&&wrapEl.getBoundingClientRect();
   const svgWidth=realSvgEl&&realSvgEl.getBoundingClientRect().width;
@@ -287,7 +294,9 @@ function positionAnnotations(){
   const VBW=vb.w,VBH=vb.h;
   const realSvg=wrap.querySelector('svg');
   // ── Facteur d'harmonisation de taille pour la vue courante (mesure live, cf. explication ci-dessus) ──
-  const LS=labelScaleForView(currentView,wrap,realSvg,VBW);
+  // V023 : on applique ensuite LABEL_MANUAL_ADJUST, un correctif manuel indépendant de la mesure live,
+  // pour regrossir les étiquettes de la vue Objectif en proportion de son agrandissement (voir explication en tête de fichier).
+  const LS=labelScaleForView(currentView,wrap,realSvg,VBW)*(LABEL_MANUAL_ADJUST[currentView]||1);
   const marginTop=VB_MARGIN_TOP*LS, marginBot=VB_MARGIN_BOT*LS;
   const lblH=LBL_H*LS, lblH3=LBL_H3*LS, padX=LBL_PAD_X*LS;
   const font=LBL_FONT*LS, font1=LBL_FONT1*LS, font2=LBL_FONT2*LS;
@@ -361,7 +370,7 @@ function positionAnnotations(){
     const py=anchor?parseFloat(anchor.getAttribute('cy')):(coord.y/100)*VBH;
     const paramName=getParamForControl(id);
     const col=colorForParam(paramName);
-    const rawLabel=coord.label; // nom du contrôle physique (ex. "Molette vitesse")
+    const rawLabel=coord.label; // nom du contrôle physique (ex. "Molette arrière")
     const label=rawLabel.length>MAX_LABEL_CHARS?rawLabel.slice(0,MAX_LABEL_CHARS-1)+'…':rawLabel;
     // Paramètre + valeur du réglage concerné, sur 2 sous-lignes distinctes (nom, puis
     // valeur) plutôt que concaténées : la largeur de l'étiquette dépend alors du plus
@@ -469,7 +478,11 @@ function positionAnnotations(){
     const line=document.createElementNS('http://www.w3.org/2000/svg','path');
     line.setAttribute('d',`M ${lblCX} ${tStartY} L ${lblCX} ${midY} L ${px} ${midY} L ${px} ${py}`);
     line.setAttribute('fill','none');line.setAttribute('stroke',col);
-    line.setAttribute('stroke-width','3');line.setAttribute('stroke-dasharray',`${(7*LS).toFixed(1)} ${(6*LS).toFixed(1)}`);
+    // V023 : épaisseur fixée à 2px RÉELS (écran), identique dans les 3 vues, via vector-effect:non-scaling-stroke —
+    // un stroke-width classique en unités viewBox donnait une épaisseur affichée variable et très fine selon
+    // l'échelle de chaque vue (auparavant '3' en unités viewBox, soit largement moins de 1px réel une fois réduit).
+    line.setAttribute('stroke-width','2');line.setAttribute('vector-effect','non-scaling-stroke');
+    line.setAttribute('stroke-dasharray',`${(7*LS).toFixed(1)} ${(6*LS).toFixed(1)}`);
     line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.7');
     svg.appendChild(line);
     // Point — taille fixe (repère de position sur la photo), volontairement non affecté
