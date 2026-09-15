@@ -1,3 +1,4 @@
+// 2026-09-14 18:50 (Paris) — V024 — Correction du pointage de la vue Objectif : les 5 contrôles (ring-aperture-lens, ring-focus, ring-zoom, switch-ois, switch-af-mf) pointaient vers les mauvais éléments du schéma. Cause racine identifiée par rendu réel (Playwright, sans réseau) : les coordonnées de repli en % n'avaient jamais été recalées après la refonte du viewBox Objectif (V022) et étaient en réalité décalées d'un cran entre les 3 bagues (ring-aperture-lens pointait en fait sur la bague de mise au point, ring-focus sur la bague de zoom, ring-zoom sur la bague d'ouverture), et les 2 switches pointaient carrément sur l'avant du fût (zone bagues) au lieu du bloc de commutateurs près de la monture. Coordonnées recalculées par inspection visuelle du rendu réel du SVG. Des ancres natives ont également été ajoutées dans index.html (voir son commentaire de version) ; ces % ne servent donc plus que de filet de sécurité, mais sont désormais justes.
 // 2026-09-14 15:42 (Paris) — V023 — Libellé 'Molette vitesse' renommé en 'Molette arrière' (CONTROL_COORDS.dial-shutter, CONTROL_SEQUENCES.vitesse, PARAM_ACTION.Vitesse)
 // 2026-09-03 15:53 (Paris) — V013 — Commentaire vue arrière mis à jour (nouveau viewBox 1536×864, FaceArr_vector.svg) — CONTROL_COORDS.back toujours en % (repli, non ancré)
 // SCHEMA DATA — coordonnées des contrôles, catégories, actions, matériel (vue caméra annotée)
@@ -18,12 +19,12 @@ const CONTROL_COORDS={
   'btn-menu'      :{view:'back',  x:72,  y:42, label:'Bouton MENU',       slot:'top'},
   'btn-disp'      :{view:'back',  x:72,  y:50, label:'Bouton DISP/BACK (menu Q réduit)', slot:'bottom'},
   'btn-drive'     :{view:'back',  x:60,  y:65, label:'Bouton Drive',      slot:'bottom'}, // position approximative, à valider phase 2
-  // ── Vue OBJECTIF (viewBox 2120×2120) — inchangé, non validé ──
-  'ring-aperture-lens':{view:'lens', x:28, y:50, label:'Bague ouverture', slot:'bottom'},
-  'ring-focus'    :{view:'lens',  x:48,  y:50, label:'Bague mise au point',slot:'bottom'},
-  'ring-zoom'     :{view:'lens',  x:68,  y:50, label:'Bague zoom',        slot:'bottom'},
-  'switch-ois'    :{view:'lens',  x:22,  y:25, label:'Switch OIS',        slot:'top'},
-  'switch-af-mf'  :{view:'lens',  x:35,  y:25, label:'Switch AF/MF',      slot:'top'},
+  // ── Vue OBJECTIF (viewBox 3180×2120) — désormais ancrée nativement (voir index.html) ; ces % ne servent plus que de filet de sécurité — recalées en V024 sur le rendu réel (étaient décalées, cause du mauvais pointage) ──
+  'ring-aperture-lens':{view:'lens', x:67.31, y:49.21, label:'Bague ouverture', slot:'bottom'},
+  'ring-focus'    :{view:'lens',  x:27.94, y:49.21, label:'Bague mise au point',slot:'bottom'},
+  'ring-zoom'     :{view:'lens',  x:44.5,  y:49.21, label:'Bague zoom',        slot:'bottom'},
+  'switch-ois'    :{view:'lens',  x:89.06, y:48.94, label:'Switch OIS',        slot:'top'},
+  'switch-af-mf'  :{view:'lens',  x:89.06, y:65.81, label:'Switch AF/MF',      slot:'top'},
 };
 // Supprimés (n'existent pas physiquement sur le X-S20) : dial-iso, dial-drive,
 // btn-af (avant), lever-af, ring-aperture (avant), btn-q-back (doublon de btn-disp)
