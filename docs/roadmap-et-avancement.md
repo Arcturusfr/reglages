@@ -1,3 +1,24 @@
+Version 2026-09-14 18:50 (Europe/Paris) — V024
+
+## Dernière livraison (V024) — correctif urgent
+
+**Bug signalé par l'utilisateur** : les étiquettes de la vue Objectif ne pointaient plus vers les bons contrôles ; les ancres invisibles avaient disparu de `index.html`.
+
+**Diagnostic** (rendu réel via Playwright en local, sans réseau — chromium fonctionne hors-ligne pour du rendu de fichiers locaux) : deux problèmes cumulés dans la vue Objectif :
+1. Les ancres natives `<circle id="anchor-...">` étaient effectivement absentes du SVG Objectif dans `index.html` (contrairement aux vues Avant/Arrière qui en ont).
+2. En leur absence, le code retombe sur le repli en % (`CONTROL_COORDS` dans `js/schema-data.js`) — mais ce repli était lui-même faux : les 3 bagues étaient décalées d'un cran (`ring-aperture-lens` pointait en fait sur la bague de mise au point, `ring-focus` sur la bague de zoom, `ring-zoom` sur la bague d'ouverture), et les 2 switches (`switch-ois`, `switch-af-mf`) pointaient carrément sur l'avant du fût au lieu du bloc de commutateurs près de la monture. Ces % n'avaient jamais été recalés après la refonte du viewBox Objectif (V022).
+
+**Correctif appliqué** :
+- Ajout des 5 ancres natives manquantes dans `index.html`, placées **hors** du groupe `<g id="lens-hscale-fix" transform="scale(1.5,1)">` — important, car `positionAnnotations()` lit les attributs `cx`/`cy` bruts sans résoudre les transforms ancêtres ; une ancre placée à l'intérieur du groupe y serait mal interprétée.
+- Coordonnées déterminées par inspection visuelle du rendu réel du SVG (capture d'écran + repérage des bagues/switches), puis vérifiées en conditions réelles dans l'app (préréglage "Pleine Lune" → onglet Schéma → Objectif).
+- Correction en parallèle du repli en % dans `js/schema-data.js` (`CONTROL_COORDS`), pour que ce filet de sécurité soit désormais juste lui aussi, et pas seulement contourné par les nouvelles ancres.
+
+**Testé dans cette session** (fait exceptionnel possible cette fois : Chromium/Playwright fonctionne bien en local malgré le réseau désactivé, tant qu'aucune requête externe n'est nécessaire — seules les polices Google Fonts échouent silencieusement, sans impact) : rendu réel de l'app, ouverture du drawer, bascule sur la vue Objectif, vérifié visuellement que "Focale" pointe sur la bague de zoom et "Ouverture" sur la bague d'ouverture, en mode normal ET en mode agrandi.
+
+**Non résolu / hors-scope** : `switch-ois` et `switch-af-mf` ne sont actuellement référencés par aucune `CONTROL_SEQUENCES` (aucun paramètre du guide ne les active) — leurs ancres/coordonnées ont été corrigées par cohérence mais restent donc pour l'instant inutilisées en pratique.
+
+---
+
 Version 2026-09-14 15:42 (Europe/Paris) — V023
 
 ## Dernière livraison (V023)
