@@ -1,0 +1,72 @@
+// PhotoManuel — Service Worker
+// 2026-09-15 (Paris) — V018 — CACHE_NAME incrémenté (v20→v21) : les livraisons V023 (renommage libellé, agrandissement/harmonisation vue Objectif, épaisseur lignes de rappel) et V024 (correctif ancres vue Objectif) modifiaient js/schema-data.js et js/schema-drawer.js sans jamais rebumper CACHE_NAME — ces fichiers JS (stratégie cache-first) pouvaient donc continuer à être servis depuis l'ancien cache malgré un index.html à jour (lui en network-first). Symptôme typique pour l'utilisateur : rien ne semble avoir changé après mise à jour, ou comportement incohérent d'un appareil à l'autre selon l'état de leur cache.
+// 2026-09-08 (Paris) — V017 — CACHE_NAME incrémenté (v19→v20) pour forcer l'invalidation du cache : les modifs CSS/JS des dernières livraisons (V015/V016) restaient invisibles côté client car servies depuis l'ancien cache (stratégie cache-first sur les assets non-document).
+const CACHE_NAME = 'photomanuel-v21';
+
+const ASSETS = [
+  './index.html',
+  './manifest.json',
+];
+
+// Installation : mise en cache initiale
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(() => {}))
+  );
+  self.skipWaiting();
+});
+
+// Activation : supprimer TOUS les anciens caches sans exception
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => {
+        console.log('[SW] Suppression ancien cache:', k);
+        return caches.delete(k);
+      }))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Interception — stratégie NETWORK-FIRST pour index.html, cache-first pour le reste
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET') return;
+  if (url.protocol === 'chrome-extension:') return;
+
+  // index.html → Network-First : toujours essayer le réseau d'abord
+  const isDocument = event.request.destination === 'document' ||
+                     url.pathname.endsWith('index.html') ||
+                     url.pathname === '/' || url.pathname === '';
+
+  if (isDocument) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Mettre à jour le cache avec la version fraîche
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match('./index.html')) // Fallback hors-ligne
+    );
+    return;
+  }
+
+  // Autres assets → Cache-First
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        if (response && response.status === 200 && response.type !== 'opaque') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        if (event.request.destination === 'document')
+          return caches.match('./index.html');
+      });
+    })
+  );
+});
