@@ -1,39 +1,4 @@
-Version 2026-09-14 18:50 (Europe/Paris) — V024
-
-## Dernière livraison (V024) — correctif urgent
-
-**Bug signalé par l'utilisateur** : les étiquettes de la vue Objectif ne pointaient plus vers les bons contrôles ; les ancres invisibles avaient disparu de `index.html`.
-
-**Diagnostic** (rendu réel via Playwright en local, sans réseau — chromium fonctionne hors-ligne pour du rendu de fichiers locaux) : deux problèmes cumulés dans la vue Objectif :
-1. Les ancres natives `<circle id="anchor-...">` étaient effectivement absentes du SVG Objectif dans `index.html` (contrairement aux vues Avant/Arrière qui en ont).
-2. En leur absence, le code retombe sur le repli en % (`CONTROL_COORDS` dans `js/schema-data.js`) — mais ce repli était lui-même faux : les 3 bagues étaient décalées d'un cran (`ring-aperture-lens` pointait en fait sur la bague de mise au point, `ring-focus` sur la bague de zoom, `ring-zoom` sur la bague d'ouverture), et les 2 switches (`switch-ois`, `switch-af-mf`) pointaient carrément sur l'avant du fût au lieu du bloc de commutateurs près de la monture. Ces % n'avaient jamais été recalés après la refonte du viewBox Objectif (V022).
-
-**Correctif appliqué** :
-- Ajout des 5 ancres natives manquantes dans `index.html`, placées **hors** du groupe `<g id="lens-hscale-fix" transform="scale(1.5,1)">` — important, car `positionAnnotations()` lit les attributs `cx`/`cy` bruts sans résoudre les transforms ancêtres ; une ancre placée à l'intérieur du groupe y serait mal interprétée.
-- Coordonnées déterminées par inspection visuelle du rendu réel du SVG (capture d'écran + repérage des bagues/switches), puis vérifiées en conditions réelles dans l'app (préréglage "Pleine Lune" → onglet Schéma → Objectif).
-- Correction en parallèle du repli en % dans `js/schema-data.js` (`CONTROL_COORDS`), pour que ce filet de sécurité soit désormais juste lui aussi, et pas seulement contourné par les nouvelles ancres.
-
-**Testé dans cette session** (fait exceptionnel possible cette fois : Chromium/Playwright fonctionne bien en local malgré le réseau désactivé, tant qu'aucune requête externe n'est nécessaire — seules les polices Google Fonts échouent silencieusement, sans impact) : rendu réel de l'app, ouverture du drawer, bascule sur la vue Objectif, vérifié visuellement que "Focale" pointe sur la bague de zoom et "Ouverture" sur la bague d'ouverture, en mode normal ET en mode agrandi.
-
-**Non résolu / hors-scope** : `switch-ois` et `switch-af-mf` ne sont actuellement référencés par aucune `CONTROL_SEQUENCES` (aucun paramètre du guide ne les active) — leurs ancres/coordonnées ont été corrigées par cohérence mais restent donc pour l'instant inutilisées en pratique.
-
----
-
-Version 2026-09-14 15:42 (Europe/Paris) — V023
-
-## Dernière livraison (V023)
-
-4 demandes ponctuelles traitées, hors chantier "drawer schéma" en cours ci-dessous :
-1. **Renommage du libellé "Molette vitesse" → "Molette arrière"** — dans les étiquettes des schémas ET dans la liste "Commandes concernées" (`js/data.js` : mapping legacy `PARAM_TO_CONTROLS.Vitesse` ; `js/schema-data.js` : `CONTROL_COORDS['dial-shutter']`, `CONTROL_SEQUENCES.vitesse`, `PARAM_ACTION.Vitesse`).
-2. **Vue Objectif agrandie de 20%** — `css/styles.css` `#svg-lens-wrap` passe de `max-width:100%` à `120%` (mode normal ET mode agrandi du drawer) ; `js/schema-drawer.js` `VIEW_MAX_WIDTH_RATIO.lens` passe de `1` à `1.2` en conséquence (ces deux valeurs doivent rester synchronisées, comme documenté déjà pour V022).
-3. **Étiquettes de la vue Objectif regrossies** — la correction d'aspect ratio du schéma Objectif (V022) avait affiché ce schéma visuellement plus grand dans sa colonne (le ratio étant passé de 0.5 à 1, indépendamment de l'élargissement du viewBox), alors que le système d'harmonisation (`labelScaleForView()`) maintient volontairement les étiquettes à une taille RÉELLE (px écran) strictement identique entre les 3 vues. Résultat : les étiquettes Objectif sont restées à la même taille absolue qu'avant, mais paraissaient disproportionnellement petites à côté d'un schéma plus grand. Ajout d'un nouveau facteur `LABEL_MANUAL_ADJUST` (indépendant de la mesure live d'harmonisation), appliqué après coup, avec `lens:1.3` pour regrossir ces étiquettes en proportion de l'agrandissement du schéma. **Valeur estimée** (pas de mesure Playwright possible dans cette session, réseau désactivé) — à ajuster visuellement si le rendu réel diffère.
-4. **Lignes de rappel épaissies à 2px réels** — l'épaisseur (`stroke-width`) des lignes en pointillés reliant chaque étiquette à son ancre était définie en unités viewBox (`'3'`) et non compensée par le facteur d'harmonisation, contrairement au `stroke-dasharray` (qui lui est bien multiplié par `LS`) : elle apparaissait donc extrêmement fine à l'écran (largement sous 1px réel une fois le viewBox réduit à la taille d'affichage) et variait d'une vue à l'autre. Remplacé par `stroke-width:2` + `vector-effect:non-scaling-stroke`, qui fixe l'épaisseur à exactement 2px écran, de façon garantie identique dans les 3 vues quelle que soit leur échelle — plus robuste que toute compensation manuelle par calcul.
-
-**Non testé visuellement dans cette session** (pas d'accès réseau pour lancer Playwright) : à vérifier à l'écran au prochain fil, en particulier le facteur `LABEL_MANUAL_ADJUST.lens` (point 3) qui est une estimation.
-
----
-
-Version 2026-09-13 22:05 (Europe/Paris)
+Version 2026-09-19 20:12 (Europe/Paris) — Point 1.a) « vérification visuelle de la vue Objectif » marqué réalisé (positionnement des 5 ancres vérifié visuellement par l'utilisateur : parfait).
 
 ## Important ##
 
@@ -57,8 +22,13 @@ Le chantier en cours est la refonte du **drawer schéma** (l'onglet qui montre v
 
 Seul le **mode Manuel (M)** est couvert par le modèle de données ; l'architecture est prévue pour accueillir d'autres modes plus tard sans réécriture.
 
+- ✅ **Contrôles réels de la vue Objectif — correction (2026-09-14)** — `CONTROL_COORDS.lens` (js/schema-data.js) listait `switch-ois` et `switch-af-mf`, qui ne correspondent pas aux 5 contrôles réels du Fujinon XF70-300mm (vérifiés avec l'utilisateur) : bague de mise au point, bague de zoom, bague des ouvertures, sélecteur de plage MAP (Full / 5m-∞), commutateur de mode d'ouverture (A / Bague). Ces deux entrées inutilisées (aucune séquence de `CONTROL_SEQUENCES` ne les référençait) ont été remplacées par `switch-focus-range` et `switch-aperture-mode`. L'outil `editeur-ancres-vue-objectif.html` a été créé (sur le modèle de `editeur-ancres-vue-avant.html`) avec ces 5 contrôles et le viewBox corrigé V022 (`0 0 3180 2120`).
+- ✅ **Vue Objectif — ancrage natif (V023, 2026-09-14)** — les 5 ancres posées par l'utilisateur avec `editeur-ancres-vue-objectif.html` ont été intégrées dans `index.html`, collées juste après la balise fermante `</g>` de `lens-hscale-fix` (donc en coordonnées finales du viewBox 3180×2120, non affectées par le `scale(1.5,1)`). La vue Objectif n'est donc plus en repli sur les coordonnées % de `CONTROL_COORDS.lens` et rejoint avant/arrière comme vue entièrement ancrée nativement. ✅ **Validation visuelle réelle effectuée par l'utilisateur le 2026-09-19 : le positionnement des 5 points sur les contrôles est parfait.** Reste : raccordement de `ring-focus`, `switch-focus-range` et `switch-aperture-mode` à des séquences (voir point 1.b ci-dessous).
+
 ## Prochaines étapes immédiates
-1. **Vue Objectif** — la compression horizontale est corrigée (V022, voir ci-dessus). Reste : ancrage natif du schéma (poser des `<circle id="anchor-...">` réels comme pour avant/arrière, en remplacement du secours en %) via l'outil `editeur-ancres-vue-objectif.html` — cet outil devra utiliser le même viewBox corrigé (`0 0 3180 2120`) et le même wrapper `<g transform="scale(1.5,1)">` que index.html pour que les ancres posées correspondent au rendu réel affiché à l'utilisateur.
+1. **Vue Objectif** — désormais ancrée nativement (V023, voir ci-dessus).
+   - a) ✅ **Fait (2026-09-19)** — vérification visuelle dans le navigateur que les 5 points tombent bien sur les bons contrôles : positionnement vérifié par l'utilisateur, parfait.
+   - b) ⏳ **Reste à faire** — raccorder `ring-focus`, `switch-focus-range` et `switch-aperture-mode` à des séquences dans `CONTROL_SEQUENCES`/`PARAM_TO_CONTROLS_V3` (actuellement déclarés dans `CONTROL_COORDS` mais pas encore utilisés par aucun paramètre — cf. commentaire dans schema-data.js).
 3. **Puis insérer une image du contrôle dans chaque étiquette** (évolution encore en réflexion côté utilisateur).
 4. **Puis la simulation LCD**, à intégrer dans le même système de vues/vignettes.
 5. **Puis les vignettes cliquables** en remplacement des onglets actuels (à voir, finalement les onglets sont peut-être satisfaisants).
