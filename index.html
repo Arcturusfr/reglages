@@ -1,3 +1,4 @@
+<!-- 2026-09-20 01:22 (Paris) — V025 — (1) Flèches de navigation agrandies : boutons import/export (data-icon="swap") et agrandir du drawer (data-icon="expand") rendus en SVG via ICONS (js/utils.js, injection dans js/init.js). (2) Pop-up fiche détail de contrôle : ajout de #ctrl-overlay/#ctrl-popup + scripts js/control-data.js et js/control-popup.js. (3) En-tête : V023→V025. -->
 <!-- 2026-09-14 01:20 (Paris) — V023 — Ancrage natif de la vue Objectif : ajout des 5 ancres invisibles <circle id="anchor-..."> (ring-focus, ring-zoom, ring-aperture-lens, switch-focus-range, switch-aperture-mode) juste après la balise fermante </g> de lens-hscale-fix, dans le repère final du viewBox (3180×2120) — donc PAS mises à l'échelle une seconde fois par le scale(1.5,1) du groupe. Positions posées par l'utilisateur avec editeur-ancres-vue-objectif.html. La vue Objectif n'est donc plus en repli sur les coordonnées % de CONTROL_COORDS.lens (js/schema-data.js), à l'image des vues avant/arrière. -->
 <!-- 2026-09-13 (Paris) — V022 — Correction de la déformation (compression horizontale) de la vue Objectif : le SVG de l'objectif était dessiné pour un viewBox carré (2120×2120) alors que le sujet réel (objectif zoom) est nettement plus large que haut. On enveloppe désormais tout le contenu du SVG objectif dans un <g id="lens-hscale-fix" transform="scale(1.5,1)"> et on élargit le viewBox en conséquence (0 0 3180 2120, soit ×1.5 en largeur, hauteur inchangée) pour restaurer des proportions réalistes (ratio ~3:2, cohérent avec le ratio de la vue avant qui provient de la même caméra/capteur). Comme la mise à l'échelle est uniforme sur toute la largeur ET appliquée à la fois au contenu et au viewBox, les coordonnées de secours en pourcentage (CONTROL_COORDS.lens dans schema-data.js) restent valides sans aucune modification (une position à x% avant reste à x% après, la transformation étant proportionnelle). Facteur 1.5 = estimation raisonnée (à ajuster visuellement si besoin en modifiant uniquement le scale(1.5,1) ET le viewBox width 3180 en conséquence, ex. scale(1.4,1) → viewBox "0 0 2968 2120"). Voir js/schema-drawer.js (VIEW_VIEWBOX.lens, VIEW_MAX_WIDTH_RATIO.lens) et css/styles.css (#svg-lens-wrap) pour les ajustements associés. -->
 <!DOCTYPE html>
@@ -21,7 +22,7 @@
   <header>
     <div class="logo">
       <div class="logo-title">Photo<span>Manuel</span></div>
-      <div class="logo-version">v 1.6 · V023</div>
+      <div class="logo-version">v 1.6 · V025</div>
     </div>
     <div class="header-actions">
       <div class="theme-toggle">
@@ -29,7 +30,7 @@
         <button class="theme-btn"        id="btn-light" onclick="setTheme('light')">☀️</button>
       </div>
       <button class="btn-icon" onclick="openAddModal()">＋</button>
-      <button class="btn-icon" onclick="showTab('io')">⇅</button>
+      <button class="btn-icon" onclick="showTab('io')" data-icon="swap" aria-label="Export / Import"></button>
     </div>
   </header>
   <div class="tabs">
@@ -86,7 +87,7 @@
         <div class="sheet-title">Fujifilm X-S20</div>
         <div class="sheet-subtitle" id="sheet-subtitle">Réglages par défaut</div>
       </div>
-      <button class="sheet-expand" id="sheet-expand" onclick="toggleExpand()" title="Agrandir">⤢</button>
+      <button class="sheet-expand" id="sheet-expand" onclick="toggleExpand()" title="Agrandir" data-icon="expand" aria-label="Agrandir"></button>
       <button class="sheet-close" onclick="closeSheet()">✕</button>
     </div>
     <!-- ═══ NOUVEAU DRAWER : LCD + MINI-CARTES + SCHÉMA ═══ -->
@@ -672,17 +673,23 @@
     <div id="modal-body"></div>
   </div>
 </div>
+<!-- POP-UP FICHE DÉTAIL D'UN CONTRÔLE (ouvert au clic sur une étiquette du drawer) -->
+<div class="ctrl-overlay" id="ctrl-overlay">
+  <div class="popup" id="ctrl-popup"></div>
+</div>
 <div id="toast"></div>
 
 <script src="js/utils.js"></script>
 <script src="js/data.js"></script>
 <script src="js/schema-data.js"></script>
+<script src="js/control-data.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/state.js"></script>
 <script src="js/tabs.js"></script>
 <script src="js/guide.js"></script>
 <script src="js/popup.js"></script>
 <script src="js/schema-drawer.js"></script>
+<script src="js/control-popup.js"></script>
 <script src="js/manage.js"></script>
 <script src="js/form.js"></script>
 <script src="js/io.js"></script>
