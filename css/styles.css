@@ -1,3 +1,4 @@
+    /* 2026-09-20 01:22 (Paris) — V025 — Icônes de navigation agrandies pour smartphone (.btn-icon 46px, .popup-back 46px, .sheet-expand 42px, .sheet-close plus grand, SVG .ico) ; ajout du pop-up fiche détail de contrôle (.ctrl-overlay, .ctrl-figure, .ctrl-context, .ctrl-section, .ctrl-note). */
     /* 2026-09-06 21:39 (Paris) — V014 — Drawer élargi : layout 2 colonnes pour l'onglet Schéma (#schema-legend ~1/3 à gauche, .schema-views-col ~2/3 à droite) afin que le drawer tienne entièrement à l'écran en mode agrandi. */
     /* 2026-09-07 22:05 (Paris) — V015 — Ajout de #svg-lens-wrap{max-width:50%} pour réduire de moitié l'emprise visuelle de la vue objectif (viewBox carré, trop imposant face aux 2 autres schémas rectangulaires). Aucune autre règle modifiée ni supprimée. */
     /* 2026-09-08 23:39 (Paris) — V016 — La règle générique .schema-views-col .svg-wrap{max-width:100%} du mode agrandi écrasait #svg-lens-wrap{max-width:50%} (spécificité CSS plus élevée), rendant la vue objectif trop grande une fois le drawer déplié. Ajout d'une règle plus spécifique .bottom-sheet.expanded ... #svg-lens-wrap{max-width:80%} pour la réduire d'environ 20% dans ce contexte précis. */
@@ -62,7 +63,9 @@
     .logo-title span{color:var(--silver);font-weight:400}
     .logo-version{font-size:.68rem;font-weight:500;letter-spacing:.1em;color:var(--text-dim);margin-top:3px}
     .header-actions{display:flex;gap:8px;align-items:center}
-    .btn-icon{background:var(--bg-card);border:1px solid var(--border);color:var(--silver);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.05rem;transition:all .2s}
+    .btn-icon{background:var(--bg-card);border:1px solid var(--border);color:var(--silver);border-radius:8px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.6rem;line-height:1;transition:all .2s}
+    .ico{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round;display:block}
+    .btn-icon .ico{width:28px;height:28px}
     .btn-icon:hover{border-color:var(--gold);color:var(--gold-light)}
     .theme-toggle{display:flex;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:3px}
     .theme-btn{background:none;border:none;cursor:pointer;width:30px;height:26px;border-radius:16px;font-size:.88rem;display:flex;align-items:center;justify-content:center;transition:all .25s;color:var(--text-dim)}
@@ -89,7 +92,8 @@
     .popup{background:var(--bg-popup);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:660px;margin:auto;padding:0;animation:fadeSlide .28s ease;box-shadow:var(--shadow-popup);overflow:hidden;position:relative}
     @keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     .popup-header{display:flex;align-items:center;gap:10px;padding:14px 18px 12px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(196,160,90,.05) 0%,transparent 60%)}
-    .popup-back{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .2s;flex-shrink:0}
+    .popup-back{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .2s;flex-shrink:0}
+    .popup-back .ico{width:30px;height:30px;stroke-width:3}
     .popup-back:hover{border-color:var(--active-tab);color:var(--active-tab)}
     .popup-title-block{flex:1;min-width:0}
     .popup-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -103,6 +107,25 @@
     .conditions-select:focus{border-color:var(--focus-color)}
     .conditions-select option{background:var(--bg-card);color:var(--text)}
     .popup-body{padding:16px 18px 20px}
+
+    /* ══ POP-UP FICHE DÉTAIL D'UN CONTRÔLE (au-dessus du drawer, z 300) ══ */
+    .ctrl-overlay{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+    .ctrl-overlay.open{display:flex}
+    .ctrl-context{display:flex;flex-direction:column;gap:2px;background:var(--bg-param);border:1px solid var(--border-param);border-left:3px solid var(--gold);border-radius:8px;padding:8px 12px;margin-bottom:14px}
+    .ctrl-context-label{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+    .ctrl-context-val{font-size:1rem;font-weight:700;color:var(--gold-light)}
+    [data-theme="light"] .ctrl-context-val{color:var(--gold)}
+    .ctrl-figure{margin:0 0 16px;background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:14px 10px 10px;text-align:center}
+    [data-theme="light"] .ctrl-figure{background:rgba(0,0,0,.04)}
+    .ctrl-figure svg{display:block;width:100%;max-width:260px;height:auto;margin:0 auto}
+    .ctrl-figure-caption{font-size:.78rem;color:var(--text-dim);margin-top:8px;line-height:1.4}
+    .ctrl-section{margin-bottom:14px}
+    .ctrl-section-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+    [data-theme="light"] .ctrl-section-title{color:var(--amber)}
+    .ctrl-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+    .ctrl-list li{display:flex;gap:10px;font-size:.9rem;color:var(--tip-text);line-height:1.5}
+    .ctrl-list li::before{content:'▸';color:var(--gold-dim);flex-shrink:0}
+    .ctrl-note{margin-top:14px;font-size:.75rem;font-style:italic;color:var(--text-dim);border-top:1px dashed var(--border);padding-top:10px}
 
     /* Params */
     .params-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
@@ -181,7 +204,7 @@
     .sheet-title{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:var(--gold-light);letter-spacing:.04em;line-height:1.3}
     [data-theme="light"] .sheet-title{color:var(--gold)}
     .sheet-subtitle{font-size:.75rem;color:var(--text-dim);margin-top:3px;line-height:1.4}
-    .sheet-close{background:none;border:none;color:var(--text-dim);font-size:1.3rem;cursor:pointer;padding:0 4px;flex-shrink:0}
+    .sheet-close{background:none;border:none;color:var(--text-dim);font-size:1.8rem;line-height:1;cursor:pointer;padding:4px 8px;flex-shrink:0}
     .sheet-close:hover{color:var(--text)}
 
     .sheet-body{padding:14px 16px 20px;flex:1;overflow-y:auto}
@@ -319,11 +342,12 @@
     /* ── Bouton expand drawer ── */
     .sheet-expand{
       background:none;border:1px solid var(--border);color:var(--text-dim);
-      border-radius:6px;width:30px;height:30px;display:flex;align-items:center;
+      border-radius:8px;width:42px;height:42px;display:flex;align-items:center;
       justify-content:center;cursor:pointer;font-size:1rem;margin-right:6px;
       transition:all .2s;flex-shrink:0;
     }
     .sheet-expand:hover{border-color:var(--gold);color:var(--gold)}
+    .sheet-expand .ico{width:24px;height:24px}
     /* Drawer élargi (mode ZFold déplié) */
     .bottom-sheet.expanded{width:min(98vw,720px)!important}
     /* ── Onglet Schéma en mode élargi : 2 colonnes (légende ~1/3 gauche, vues ~2/3 droite) ── */
