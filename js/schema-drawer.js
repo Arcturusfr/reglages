@@ -1,3 +1,4 @@
+// 2026-09-20 01:22 (Paris) — V025 — (1) toggleExpand() utilise ICONS.expand/collapse (SVG) au lieu des glyphes ⤢/⤡. (2) Étiquettes cliquables : si getControlDetail(id) existe (js/control-data.js), l'étiquette reçoit une icône ⓘ (largeur augmentée, texte décalé), devient un <g role="button"> à pointer-events:all et ouvre openControlDetail() (js/control-popup.js) avec le paramètre et la valeur concernés. Les autres étiquettes sont inchangées.
 // 2026-09-14 15:42 (Paris) — V023 — (1) Libellé 'Molette vitesse'→'Molette arrière' n'affecte pas ce fichier directement (voir schema-data.js) mais la ligne de rappel est désormais tracée en épaisseur RÉELLE fixe de 2px écran (vector-effect:non-scaling-stroke) au lieu de 2/3 unités viewBox (qui donnaient une épaisseur visuelle variable et très fine selon la vue). (2) Vue Objectif agrandie de 20% : VIEW_MAX_WIDTH_RATIO.lens passe de 1 à 1.2 (à resynchroniser avec css/styles.css #svg-lens-wrap, qui passe conjointement de max-width:100% à 120%). (3) Ajout de LABEL_MANUAL_ADJUST : la correction d'aspect ratio de la vue Objectif (V022) a rendu son image visuellement plus grande dans la colonne (ratio 0.5→1, indépendamment de l'élargissement du viewBox 2120→3180), alors que labelScaleForView() maintient volontairement la taille RÉELLE des étiquettes strictement identique entre les 3 vues (par définition de l'harmonisation) — les étiquettes de la vue Objectif sont donc restées à la même taille absolue qu'avant, mais paraissent désormais visuellement petites à côté d'un schéma plus grand. LABEL_MANUAL_ADJUST.lens applique un facteur correctif manuel (indépendant de l'harmonisation automatique) pour regrossir ces étiquettes en proportion du grossissement du schéma. Valeur estimée à ajuster visuellement si besoin.
 // 2026-09-13 (Paris) — V022 — Correction de l'aspect ratio de la vue Objectif : VIEW_VIEWBOX.lens passe de {w:2120,h:2120} (carré, déformant) à {w:3180,h:2120} (~3:2), et VIEW_MAX_WIDTH_RATIO.lens repasse de 0.5 à 1 puisque le schéma n'a plus besoin d'être réduit de moitié pour compenser une hauteur excessive. Voir index.html (<g id="lens-hscale-fix">) et css/styles.css (#svg-lens-wrap) pour le reste de la correction.
 // 2026-09-12 (Paris) — V021 — Anti-croisement des lignes de rappel : l'ancien système attribuait un "étage" (tier) horizontal aux étiquettes simplement dans l'ordre de tri par position d'ancre (index du tableau). Ceci ne garantit PAS l'absence de croisement : si le trajet horizontal d'une étiquette A "avale" la position d'une étiquette B qui doit ensuite descendre vers un étage plus éloigné, la verticale de B traverse le segment horizontal de A. Remplacement par assignTiers() : calcule pour chaque paire de connexions une contrainte "doit être plus extérieure que" dès que le point de départ (centerX) de l'une tombe dans le couloir horizontal de l'autre, puis résout ces contraintes par relaxation itérative (façon tri topologique) et compacte les paliers obtenus. Résultat : les trajets à faible débattement restent sur les voies proches du schéma, les trajets à grand débattement sont repoussés sur des voies plus extérieures, sans jamais traverser un couloir occupé. Lignes de rappel allégées (pointillé plus fin, proportionnel à l'harmonisation V020). Voir explication détaillée en fin de fichier.
@@ -75,7 +76,7 @@ function toggleExpand(){
   const sheet=document.getElementById('bottom-sheet');
   const btn=document.getElementById('sheet-expand');
   const expanded=sheet.classList.toggle('expanded');
-  if(btn) btn.textContent=expanded?'⤡':'⤢';
+  if(btn) btn.innerHTML=expanded?ICONS.collapse:ICONS.expand;
   // Repositionner les annotations si schéma visible
   if(currentDrawerTab==='schema') setTimeout(positionAnnotations,100);
 }
@@ -385,8 +386,11 @@ function positionAnnotations(){
     const line2W=hasValue?paramLine.length*font2*0.56:0;
     const line3W=hasValue?valueLine.length*font*0.52:0;
     const txtW=Math.max(line1W,line2W,line3W,minLblW);
-    const lblW=txtW+padX*2;
-    return{id,px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW};
+    // Fiche détail disponible → place réservée à droite du texte pour l'icône ⓘ
+    const hasDetail=typeof getControlDetail==='function'&&!!getControlDetail(id);
+    const iconW=hasDetail?font*1.2:0;
+    const lblW=txtW+padX*2+iconW;
+    return{id,px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW,hasDetail,iconW,paramName};
   }
 
   // ── Étape 2 : résoudre les collisions horizontales le long d'une même rangée ──
@@ -418,57 +422,78 @@ function positionAnnotations(){
 
   // ── Étape 3 : dessiner chaque étiquette à sa position résolue ──
   function drawAnnotation(it,fromTop,tierIdx){
-    const{px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW,centerX}=it;
+    const{id,px,py,col,label,paramLine,valueLine,hasValue,boxH,lblW,centerX,hasDetail,iconW,paramName}=it;
     const lblX0=centerX-lblW/2;
     const lblCX=centerX;
     const lblY0=fromTop?VBY0+gapEdge:VBH+marginBot-boxH-gapEdge;
     const lblCY=lblY0+boxH/2;
+    // Groupe de l'étiquette (fond + textes + icône) : cible du clic si une fiche détail existe
+    const lg=document.createElementNS('http://www.w3.org/2000/svg','g');
+    svg.appendChild(lg);
+    const textCX=lblCX-(iconW||0)/2; // texte recentré dans la partie gauche quand l'icône ⓘ occupe la droite
     // Fond étiquette
     const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
     rect.setAttribute('x',lblX0);rect.setAttribute('y',lblY0);rect.setAttribute('width',lblW);rect.setAttribute('height',boxH);
     rect.setAttribute('rx',corner);rect.setAttribute('fill',isDark?'rgba(10,12,16,.9)':'rgba(250,248,244,.93)');
     rect.setAttribute('stroke',col);rect.setAttribute('stroke-width','4');
-    svg.appendChild(rect);
+    lg.appendChild(rect);
     // Texte
     if(hasValue){
       // Ligne 1 — nom du contrôle physique, discret, en haut de l'étiquette
       const txt1=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt1.setAttribute('x',lblCX);txt1.setAttribute('y',lblY0+padTop+font1*0.8);
+      txt1.setAttribute('x',textCX);txt1.setAttribute('y',lblY0+padTop+font1*0.8);
       txt1.setAttribute('text-anchor','middle');
       txt1.setAttribute('font-family','Inter,system-ui,sans-serif');
       txt1.setAttribute('font-size',font1);txt1.setAttribute('font-weight','600');
       txt1.setAttribute('fill',isDark?'rgba(232,242,248,.65)':'rgba(20,20,20,.68)');
       txt1.textContent=label;
-      svg.appendChild(txt1);
+      lg.appendChild(txt1);
       // Ligne 2 — nom du PARAMÈTRE, en majuscules, taille intermédiaire
       const txt2=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt2.setAttribute('x',lblCX);txt2.setAttribute('y',lblY0+padTop+font1+font2*0.85);
+      txt2.setAttribute('x',textCX);txt2.setAttribute('y',lblY0+padTop+font1+font2*0.85);
       txt2.setAttribute('text-anchor','middle');
       txt2.setAttribute('font-family','Inter,system-ui,sans-serif');
       txt2.setAttribute('font-size',font2);txt2.setAttribute('font-weight','700');
       txt2.setAttribute('fill',col);
       txt2.setAttribute('letter-spacing','.5');
       txt2.textContent=paramLine;
-      svg.appendChild(txt2);
+      lg.appendChild(txt2);
       // Ligne 3 — VALEUR du réglage, mise en avant (couleur du paramètre, gras, plus grand)
       const txt3=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt3.setAttribute('x',lblCX);txt3.setAttribute('y',lblY0+boxH-padBottom);
+      txt3.setAttribute('x',textCX);txt3.setAttribute('y',lblY0+boxH-padBottom);
       txt3.setAttribute('text-anchor','middle');
       txt3.setAttribute('font-family','Inter,system-ui,sans-serif');
       txt3.setAttribute('font-size',font);txt3.setAttribute('font-weight','700');
       txt3.setAttribute('fill',col);
       txt3.textContent=valueLine;
-      svg.appendChild(txt3);
+      lg.appendChild(txt3);
     }else{
       // Repli : uniquement le nom du contrôle (aucun paramètre actif identifié)
       const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt.setAttribute('x',lblCX);txt.setAttribute('y',lblCY+font*0.38);
+      txt.setAttribute('x',textCX);txt.setAttribute('y',lblCY+font*0.38);
       txt.setAttribute('text-anchor','middle');
       txt.setAttribute('font-family','Inter,system-ui,sans-serif');
       txt.setAttribute('font-size',font);txt.setAttribute('font-weight','700');
       txt.setAttribute('fill',col);
       txt.textContent=label;
-      svg.appendChild(txt);
+      lg.appendChild(txt);
+    }
+    if(hasDetail){
+      const r=font*0.46,icx=lblX0+lblW-padX-iconW/2,icy=lblCY;
+      const ic=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ic.setAttribute('cx',icx);ic.setAttribute('cy',icy);ic.setAttribute('r',r);
+      ic.setAttribute('fill','none');ic.setAttribute('stroke',col);ic.setAttribute('stroke-width','5');
+      lg.appendChild(ic);
+      const it2=document.createElementNS('http://www.w3.org/2000/svg','text');
+      it2.setAttribute('x',icx);it2.setAttribute('y',icy+r*0.48);it2.setAttribute('text-anchor','middle');
+      it2.setAttribute('font-family','Inter,system-ui,sans-serif');it2.setAttribute('font-size',r*1.4);
+      it2.setAttribute('font-weight','800');it2.setAttribute('fill',col);it2.textContent='i';
+      lg.appendChild(it2);
+      // Le calque parent est en pointer-events:none : on réactive uniquement pour cette étiquette
+      lg.style.pointerEvents='all';lg.style.cursor='pointer';
+      lg.setAttribute('role','button');lg.setAttribute('aria-label','Détails : '+label);
+      lg.setAttribute('data-ctrl-id',id);
+      lg.addEventListener('click',e=>{e.stopPropagation();openControlDetail(id,{param:paramName,value:valueLine});});
     }
     // Trait — chaque étiquette a son propre "étage" horizontal (tier) pour que
     // les lignes ne se superposent jamais, même si elles se croisent.
