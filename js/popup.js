@@ -1,4 +1,4 @@
-// 2026-09-07 00:00 (Paris) — V015
+// 2026-09-20 01:22 (Paris) — V025 — Flèche de retour du popup : glyphe ← remplacé par ICONS.back (SVG, plus grand et plus lisible sur smartphone).
 // POPUP — popup de détail d'un préréglage + drawer schéma (ouverture/fermeture, rendu, sheet)
 function openPopup(id){
   currentPopupPreset=getPreset(id);if(!currentPopupPreset)return;
@@ -38,7 +38,7 @@ function renderPopup(){
   const warnHtml=p.warning?`<div class="warning-badge">${p.warning}</div>`:'';
   document.getElementById('popup-content').innerHTML=`
     <div class="popup-header">
-      <button class="popup-back" onclick="closePopup()">←</button>
+      <button class="popup-back" onclick="closePopup()" aria-label="Retour">${ICONS.back}</button>
       <div class="popup-title-block">
         <div class="popup-title">${p.icon} ${p.name}</div>
         <div class="popup-desc">${p.description||''}</div>
