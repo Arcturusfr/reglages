@@ -1,5 +1,5 @@
 // PhotoManuel — Service Worker
-// 2026-09-15 (Paris) — V018 — CACHE_NAME incrémenté (v20→v21) : les livraisons V023 (renommage libellé, agrandissement/harmonisation vue Objectif, épaisseur lignes de rappel) et V024 (correctif ancres vue Objectif) modifiaient js/schema-data.js et js/schema-drawer.js sans jamais rebumper CACHE_NAME — ces fichiers JS (stratégie cache-first) pouvaient donc continuer à être servis depuis l'ancien cache malgré un index.html à jour (lui en network-first). Symptôme typique pour l'utilisateur : rien ne semble avoir changé après mise à jour, ou comportement incohérent d'un appareil à l'autre selon l'état de leur cache.
+// 2026-09-20 01:22 (Paris) — V025 — CACHE_NAME v20→v21 : invalider le cache cache-first pour livrer les nouveaux js/control-data.js, js/control-popup.js et les JS/CSS modifiés.
 // 2026-09-08 (Paris) — V017 — CACHE_NAME incrémenté (v19→v20) pour forcer l'invalidation du cache : les modifs CSS/JS des dernières livraisons (V015/V016) restaient invisibles côté client car servies depuis l'ancien cache (stratégie cache-first sur les assets non-document).
 const CACHE_NAME = 'photomanuel-v21';
 
