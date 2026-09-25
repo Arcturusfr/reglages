@@ -1,3 +1,4 @@
+    /* 2026-09-25 21:55 (Paris) — V028 — Fiche détail contrôle : schéma nettement agrandi — .ctrl-figure-media passe de 44% à 58% de largeur, .ctrl-figure-media svg perd son plafond max-width:240px (désormais 100% de sa colonne) ; .ctrl-figure-intro réduit d'autant. */
     /* 2026-09-24 10:20 (Paris) — V027 — (1) .bottom-sheet élargi en mode normal (min(92vw,400px) → min(97vw,430px)) : sur l'écran extérieur replié du ZFold (plus étroit), le libellé "FACE ARRIÈRE" débordait d'1 caractère et demi ; le gain d'environ 15-17px réparti sur les 3 onglets (~2 caractères chacun) corrige le débordement. (2) .ctrl-figure passe en layout 2 colonnes (schéma+légende à gauche via .ctrl-figure-media, 1ère section de texte à droite via .ctrl-figure-intro — contenu injecté par js/control-popup.js), avec repli en 1 colonne sous 420px. */
     /* 2026-09-20 01:22 (Paris) — V025 — Icônes de navigation agrandies pour smartphone (.btn-icon 46px, .popup-back 46px, .sheet-expand 42px, .sheet-close plus grand, SVG .ico) ; ajout du pop-up fiche détail de contrôle (.ctrl-overlay, .ctrl-figure, .ctrl-context, .ctrl-section, .ctrl-note). */
     /* 2026-09-06 21:39 (Paris) — V014 — Drawer élargi : layout 2 colonnes pour l'onglet Schéma (#schema-legend ~1/3 à gauche, .schema-views-col ~2/3 à droite) afin que le drawer tienne entièrement à l'écran en mode agrandi. */
@@ -118,8 +119,8 @@
     [data-theme="light"] .ctrl-context-val{color:var(--gold)}
     .ctrl-figure{margin:0 0 16px;background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:14px 12px 12px;display:flex;gap:14px;align-items:flex-start;text-align:left}
     [data-theme="light"] .ctrl-figure{background:rgba(0,0,0,.04)}
-    .ctrl-figure-media{flex:0 0 44%;max-width:44%;text-align:center}
-    .ctrl-figure-media svg{display:block;width:100%;max-width:240px;height:auto;margin:0 auto}
+    .ctrl-figure-media{flex:0 0 58%;max-width:58%;text-align:center}
+    .ctrl-figure-media svg{display:block;width:100%;max-width:none;height:auto;margin:0 auto}
     .ctrl-figure-caption{font-size:.78rem;color:var(--text-dim);margin-top:8px;line-height:1.4;text-align:center}
     .ctrl-figure-intro{flex:1;min-width:0}
     .ctrl-figure-intro .ctrl-section-title{margin-top:2px}
