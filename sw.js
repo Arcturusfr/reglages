@@ -1,8 +1,9 @@
 // PhotoManuel — Service Worker
+// 2026-09-24 10:20 (Paris) — V027 — CACHE_NAME v22→v23 : invalider le cache cache-first pour livrer css/styles.css, js/control-popup.js et js/control-data.js modifiés (drawer élargi en mode replié + pop-up contrôle en 2 colonnes + texte "Ouverture" revu).
 // 2026-09-23 07:59 (Paris) — V026 — CACHE_NAME v21→v22 : invalider le cache cache-first pour livrer les js/schema-data.js et js/control-data.js modifiés (fiche détail "Ouverture" + séquence en 2 étapes).
 // 2026-09-20 01:22 (Paris) — V025 — CACHE_NAME v20→v21 : invalider le cache cache-first pour livrer les nouveaux js/control-data.js, js/control-popup.js et les JS/CSS modifiés.
 // 2026-09-08 (Paris) — V017 — CACHE_NAME incrémenté (v19→v20) pour forcer l'invalidation du cache : les modifs CSS/JS des dernières livraisons (V015/V016) restaient invisibles côté client car servies depuis l'ancien cache (stratégie cache-first sur les assets non-document).
-const CACHE_NAME = 'photomanuel-v22';
+const CACHE_NAME = 'photomanuel-v23';
 
 const ASSETS = [
   './index.html',
