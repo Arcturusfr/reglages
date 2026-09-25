@@ -1,3 +1,4 @@
+// 2026-09-24 10:20 (Paris) — V027 — (1) Titre de la 1ère section renommé « Dans le mode M (Manuel) » (dial-rear ET aperture — même libellé littéral dans les 2 fiches). Ce titre est désormais affiché à droite du schéma dans le cadre (js/control-popup.js gère la mise en page, aucune autre donnée changée ici). (2) Texte de la fiche « aperture » réécrit : la bague de l'objectif et la molette arrière du boîtier sont désormais présentées comme mutuellement EXCLUSIVES selon la position du commutateur — bague seule quand il pointe sur le symbole du diaphragme, molette arrière seule quand il pointe sur le repère rouge « A » — et non plus comme un choix libre entre bague et molette avant (correction relayée par l'utilisateur, à vérifier sur le boîtier réel comme le reste de cette fiche).
 // 2026-09-23 07:59 (Paris) — V026 — Ajout de la fiche « Ouverture » : couvre à la fois la bague d'ouverture (ring-aperture-lens) et le commutateur du mode d'ouverture (switch-aperture-mode), qui pointent désormais tous les deux vers la même fiche via CONTROL_DETAIL_ALIAS — cohérent avec le fait qu'ils forment une seule et même séquence à 2 étapes dans js/schema-data.js (CONTROL_SEQUENCES.ouverture). Illustration : SVG fourni par l'utilisateur (commutateurs-objectif.svg, schéma du fût de l'objectif : bague crantée d'ouverture + commutateur de mode A/bague), corrigé uniquement pour préfixer l'id du <path> de guidage de texte (« courbe » → « ap-courbe ») afin d'éviter toute collision avec un futur SVG inline du même document (même précaution que pour la molette arrière, cf. préfixe « mra- »). Contenu inchangé sinon.
 // CONTROL DATA — fiches détail des contrôles du X-S20
 // Pour ajouter un contrôle : 1) ajouter une entrée dans CONTROL_DETAILS ; 2) déclarer ses ids de CONTROL_COORDS dans CONTROL_DETAIL_ALIAS.
@@ -47,7 +48,7 @@ const CONTROL_DETAILS={
 </svg>`,
     note:'Fiche en test : contenu à valider et à compléter selon votre boîtier.',
     sections:[
-      {title:'Dans PhotoManuel (mode M)',items:[
+      {title:'Dans le mode M (Manuel)',items:[
         'Vitesse d\'obturation : tourner la molette pour choisir la vitesse (réglage « Vitesse » des cartes).',
         'ISO : après un appui sur le bouton ISO, la molette avant ou la molette arrière peuvent, au choix, changer la valeur.',
       ]},
@@ -156,9 +157,10 @@ const CONTROL_DETAILS={
 </svg>`,
     note:'Fiche en test : contenu à valider et à compléter selon votre boîtier.',
     sections:[
-      {title:'Dans PhotoManuel (mode M)',items:[
-        "① Positionner d'abord le commutateur du mode d'ouverture sur la position de réglage manuel (pas sur le repère rouge « A »), sans quoi la bague et la molette avant restent sans effet sur l'ouverture.",
-        "② Régler ensuite la valeur d'ouverture (réglage « Ouverture » des cartes), au choix avec la bague crantée de l'objectif (méthode habituellement préférée) ou avec la molette avant du boîtier.",
+      {title:'Dans le mode M (Manuel)',items:[
+        "Sur le symbole du diaphragme : seule la bague crantée de l'objectif règle l'ouverture — la molette du boîtier reste sans effet.",
+        "Sur le repère rouge « A » : seule la molette arrière du boîtier règle l'ouverture (réglage « Ouverture » des cartes) — la bague de l'objectif reste sans effet.",
+        "Les deux méthodes sont exclusives l'une de l'autre : c'est la position du commutateur qui détermine laquelle est active, jamais les deux en même temps.",
       ]},
       {title:"À propos du commutateur du mode d'ouverture",items:[
         "Repère rouge « A » : l'ouverture est pilotée automatiquement par le boîtier — utile dans d'autres modes d'exposition, mais à éviter en mode Manuel (M), celui utilisé par ce guide.",
