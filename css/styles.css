@@ -1,3 +1,4 @@
+    /* 2026-09-24 10:20 (Paris) — V027 — (1) .bottom-sheet élargi en mode normal (min(92vw,400px) → min(97vw,430px)) : sur l'écran extérieur replié du ZFold (plus étroit), le libellé "FACE ARRIÈRE" débordait d'1 caractère et demi ; le gain d'environ 15-17px réparti sur les 3 onglets (~2 caractères chacun) corrige le débordement. (2) .ctrl-figure passe en layout 2 colonnes (schéma+légende à gauche via .ctrl-figure-media, 1ère section de texte à droite via .ctrl-figure-intro — contenu injecté par js/control-popup.js), avec repli en 1 colonne sous 420px. */
     /* 2026-09-20 01:22 (Paris) — V025 — Icônes de navigation agrandies pour smartphone (.btn-icon 46px, .popup-back 46px, .sheet-expand 42px, .sheet-close plus grand, SVG .ico) ; ajout du pop-up fiche détail de contrôle (.ctrl-overlay, .ctrl-figure, .ctrl-context, .ctrl-section, .ctrl-note). */
     /* 2026-09-06 21:39 (Paris) — V014 — Drawer élargi : layout 2 colonnes pour l'onglet Schéma (#schema-legend ~1/3 à gauche, .schema-views-col ~2/3 à droite) afin que le drawer tienne entièrement à l'écran en mode agrandi. */
     /* 2026-09-07 22:05 (Paris) — V015 — Ajout de #svg-lens-wrap{max-width:50%} pour réduire de moitié l'emprise visuelle de la vue objectif (viewBox carré, trop imposant face aux 2 autres schémas rectangulaires). Aucune autre règle modifiée ni supprimée. */
@@ -115,10 +116,18 @@
     .ctrl-context-label{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
     .ctrl-context-val{font-size:1rem;font-weight:700;color:var(--gold-light)}
     [data-theme="light"] .ctrl-context-val{color:var(--gold)}
-    .ctrl-figure{margin:0 0 16px;background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:14px 10px 10px;text-align:center}
+    .ctrl-figure{margin:0 0 16px;background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:14px 12px 12px;display:flex;gap:14px;align-items:flex-start;text-align:left}
     [data-theme="light"] .ctrl-figure{background:rgba(0,0,0,.04)}
-    .ctrl-figure svg{display:block;width:100%;max-width:260px;height:auto;margin:0 auto}
-    .ctrl-figure-caption{font-size:.78rem;color:var(--text-dim);margin-top:8px;line-height:1.4}
+    .ctrl-figure-media{flex:0 0 44%;max-width:44%;text-align:center}
+    .ctrl-figure-media svg{display:block;width:100%;max-width:240px;height:auto;margin:0 auto}
+    .ctrl-figure-caption{font-size:.78rem;color:var(--text-dim);margin-top:8px;line-height:1.4;text-align:center}
+    .ctrl-figure-intro{flex:1;min-width:0}
+    .ctrl-figure-intro .ctrl-section-title{margin-top:2px}
+    .ctrl-figure-intro .ctrl-list{margin-bottom:0}
+    @media(max-width:300px){
+      .ctrl-figure{flex-direction:column}
+      .ctrl-figure-media{flex:1 1 auto;max-width:100%}
+    }
     .ctrl-section{margin-bottom:14px}
     .ctrl-section-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
     [data-theme="light"] .ctrl-section-title{color:var(--amber)}
@@ -176,7 +185,7 @@
       background:var(--bg-card);
       border-left:1px solid var(--border);
       border-radius:0;
-      width:min(92vw, 400px);
+      width:min(97vw, 430px);
       height:100%;overflow-y:auto;
       padding:0 0 32px;
       animation:drawerIn .32s cubic-bezier(.4,0,.2,1);
@@ -230,7 +239,8 @@
     .anno-overlay-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:4}
 
     /* Onglets de vue */
-    .sheet-view-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(196,160,90,.02);flex-shrink:0}
+    .sheet-view-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(196,160,90,.02);flex-shrink:0;overflow-x:auto}
+    .sheet-view-tabs::-webkit-scrollbar{height:3px}
     .svt{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
       color:var(--text-dim);padding:8px 12px;cursor:pointer;border:none;
       border-bottom:2px solid transparent;background:none;transition:all .2s;white-space:nowrap;flex:1;text-align:center}
@@ -240,7 +250,12 @@
     .schema-view{display:none}.schema-view.active{display:block}
     /* ── Onglets drawer ── */
     .drawer-tab{display:none}.drawer-tab.active{display:block}
-    .schema-sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(196,160,90,.02);margin-bottom:10px}
+    /* V027 : overflow-x:auto en filet de sécurité — les .svt (flex:1, white-space:nowrap) ne peuvent pas rétrécir
+       sous leur largeur de texte (min-width:auto par défaut sur les flex-items) ; sans ce conteneur de défilement,
+       un débordement s'échappe de TOUTE la mise en page (jusqu'au bord de l'écran, cf. bug "Face arrière" replié)
+       plutôt que de rester contenu et scrollable dans la barre d'onglets elle-même. Même principe que .cond-tabs-header. */
+    .schema-sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(196,160,90,.02);margin-bottom:10px;overflow-x:auto}
+    .schema-sub-tabs::-webkit-scrollbar{height:3px}
 
     /* ── Écran LCD simulé ── */
     .lcd-screen{
