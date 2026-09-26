@@ -1,3 +1,4 @@
+    /* 2026-09-25 22:40 (Paris) — V029 — Schéma de fiche contrôle encore agrandi (≥80% vs V028, mesuré via Playwright) : (1) popup/pading dédiés aux fiches contrôle resserrés (.ctrl-overlay padding 16px→6px, .ctrl-overlay .popup max-width 960px, .ctrl-overlay .popup-body padding resserré — sans toucher au popup du préréglage, qui garde ses valeurs d'origine). (2) .ctrl-figure-media n'a plus de fraction fixe (flex:1 1 auto) : l'image prend tout l'espace restant, .ctrl-figure-intro passe à une largeur FIXE de 210px (au lieu d'une fraction qui rétrécissait le texte en même temps que l'image grandissait) — texte lisible quelle que soit la largeur du schéma, y compris en pile (mobile). (3) Seuil de repli en 1 colonne relevé de 300px à 480px : sur la plupart des téléphones (~360-430px de large), le schéma s'affiche donc en pleine largeur au-dessus du texte plutôt que comprimé dans une étroite colonne latérale. */
     /* 2026-09-25 21:55 (Paris) — V028 — Fiche détail contrôle : schéma nettement agrandi — .ctrl-figure-media passe de 44% à 58% de largeur, .ctrl-figure-media svg perd son plafond max-width:240px (désormais 100% de sa colonne) ; .ctrl-figure-intro réduit d'autant. */
     /* 2026-09-24 10:20 (Paris) — V027 — (1) .bottom-sheet élargi en mode normal (min(92vw,400px) → min(97vw,430px)) : sur l'écran extérieur replié du ZFold (plus étroit), le libellé "FACE ARRIÈRE" débordait d'1 caractère et demi ; le gain d'environ 15-17px réparti sur les 3 onglets (~2 caractères chacun) corrige le débordement. (2) .ctrl-figure passe en layout 2 colonnes (schéma+légende à gauche via .ctrl-figure-media, 1ère section de texte à droite via .ctrl-figure-intro — contenu injecté par js/control-popup.js), avec repli en 1 colonne sous 420px. */
     /* 2026-09-20 01:22 (Paris) — V025 — Icônes de navigation agrandies pour smartphone (.btn-icon 46px, .popup-back 46px, .sheet-expand 42px, .sheet-close plus grand, SVG .ico) ; ajout du pop-up fiche détail de contrôle (.ctrl-overlay, .ctrl-figure, .ctrl-context, .ctrl-section, .ctrl-note). */
@@ -111,23 +112,26 @@
     .popup-body{padding:16px 18px 20px}
 
     /* ══ POP-UP FICHE DÉTAIL D'UN CONTRÔLE (au-dessus du drawer, z 300) ══ */
-    .ctrl-overlay{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+    .ctrl-overlay{position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:6px;overflow-y:auto}
     .ctrl-overlay.open{display:flex}
+    .ctrl-overlay .popup{max-width:960px}
+    .ctrl-overlay .popup-body{padding:12px 10px 16px}
     .ctrl-context{display:flex;flex-direction:column;gap:2px;background:var(--bg-param);border:1px solid var(--border-param);border-left:3px solid var(--gold);border-radius:8px;padding:8px 12px;margin-bottom:14px}
     .ctrl-context-label{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
     .ctrl-context-val{font-size:1rem;font-weight:700;color:var(--gold-light)}
     [data-theme="light"] .ctrl-context-val{color:var(--gold)}
-    .ctrl-figure{margin:0 0 16px;background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:14px 12px 12px;display:flex;gap:14px;align-items:flex-start;text-align:left}
+    .ctrl-figure{margin:0 0 16px;background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:10px 6px 8px;display:flex;gap:10px;align-items:flex-start;text-align:left}
     [data-theme="light"] .ctrl-figure{background:rgba(0,0,0,.04)}
-    .ctrl-figure-media{flex:0 0 58%;max-width:58%;text-align:center}
+    .ctrl-figure-media{flex:1 1 auto;min-width:0;text-align:center}
+    .ctrl-figure-intro{flex:0 0 210px;max-width:210px}
     .ctrl-figure-media svg{display:block;width:100%;max-width:none;height:auto;margin:0 auto}
     .ctrl-figure-caption{font-size:.78rem;color:var(--text-dim);margin-top:8px;line-height:1.4;text-align:center}
-    .ctrl-figure-intro{flex:1;min-width:0}
     .ctrl-figure-intro .ctrl-section-title{margin-top:2px}
     .ctrl-figure-intro .ctrl-list{margin-bottom:0}
-    @media(max-width:300px){
+    @media(max-width:480px){
       .ctrl-figure{flex-direction:column}
       .ctrl-figure-media{flex:1 1 auto;max-width:100%}
+      .ctrl-figure-intro{flex:1 1 auto;max-width:100%}
     }
     .ctrl-section{margin-bottom:14px}
     .ctrl-section-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
