@@ -1,3 +1,4 @@
+<!-- 2026-09-25 22:40 (Paris) — V029 — Fiche détail « Ouverture » : schéma encore agrandi (css/styles.css : popup dédié 900px, colonne média 58%→74%, seuil de repli 1-colonne 300px→480px) ; légende et texte corrigés (bague au centre, 2 repères du commutateur cités, curseur précisé en tête du texte de droite) — js/control-data.js. En-tête : V028→V029. -->
 <!-- 2026-09-25 21:55 (Paris) — V028 — Fiche détail « Ouverture » (js/control-data.js) : bulle encadrant le schéma remplacée par un simple rectangle à coins arrondis (recentré sur molette/commutateurs) ; affichage du schéma nettement agrandi (css/styles.css, colonne média 44%→58%, suppression du plafond de largeur du SVG). En-tête : V027→V028. -->
 <!-- 2026-09-20 01:22 (Paris) — V025 — (1) Flèches de navigation agrandies : boutons import/export (data-icon="swap") et agrandir du drawer (data-icon="expand") rendus en SVG via ICONS (js/utils.js, injection dans js/init.js). (2) Pop-up fiche détail de contrôle : ajout de #ctrl-overlay/#ctrl-popup + scripts js/control-data.js et js/control-popup.js. (3) En-tête : V023→V025. -->
 <!-- 2026-09-14 01:20 (Paris) — V023 — Ancrage natif de la vue Objectif : ajout des 5 ancres invisibles <circle id="anchor-..."> (ring-focus, ring-zoom, ring-aperture-lens, switch-focus-range, switch-aperture-mode) juste après la balise fermante </g> de lens-hscale-fix, dans le repère final du viewBox (3180×2120) — donc PAS mises à l'échelle une seconde fois par le scale(1.5,1) du groupe. Positions posées par l'utilisateur avec editeur-ancres-vue-objectif.html. La vue Objectif n'est donc plus en repli sur les coordonnées % de CONTROL_COORDS.lens (js/schema-data.js), à l'image des vues avant/arrière. -->
@@ -23,7 +24,7 @@
   <header>
     <div class="logo">
       <div class="logo-title">Photo<span>Manuel</span></div>
-      <div class="logo-version">v 1.6 · V028</div>
+      <div class="logo-version">v 1.6 · V029</div>
     </div>
     <div class="header-actions">
       <div class="theme-toggle">
