@@ -1,3 +1,4 @@
+// 2026-09-25 22:40 (Paris) — V029 — Fiche « Ouverture » : (1) légende sous le schéma corrigée — bague crantée d'ouverture décrite « au centre » (et non « à gauche »), et mention explicite des 2 repères du commutateur (symbole du diaphragme + repère rouge « A »), pas seulement le repère rouge. (2) 1ère phrase ajoutée en tête du texte de droite (1ère section) : précise que c'est le curseur du commutateur qui se positionne sur l'un ou l'autre repère. Agrandissement du schéma lui-même : voir css/styles.css.
 // 2026-09-25 21:55 (Paris) — V028 — Fiche « Ouverture » : (1) la bulle encadrant le schéma (chemin complexe suivant les contours réels du fût) est remplacée par un simple rectangle à coins arrondis, recentré sur la zone molette/commutateurs (x:570 y:871 690×515). (2) Affichage du schéma nettement agrandi dans la fiche (css/styles.css : colonne média élargie 44%→58%, plafond de largeur du SVG supprimé).
 // 2026-09-24 10:20 (Paris) — V027 — (1) Titre de la 1ère section renommé « Dans le mode M (Manuel) » (dial-rear ET aperture — même libellé littéral dans les 2 fiches). Ce titre est désormais affiché à droite du schéma dans le cadre (js/control-popup.js gère la mise en page, aucune autre donnée changée ici). (2) Texte de la fiche « aperture » réécrit : la bague de l'objectif et la molette arrière du boîtier sont désormais présentées comme mutuellement EXCLUSIVES selon la position du commutateur — bague seule quand il pointe sur le symbole du diaphragme, molette arrière seule quand il pointe sur le repère rouge « A » — et non plus comme un choix libre entre bague et molette avant (correction relayée par l'utilisateur, à vérifier sur le boîtier réel comme le reste de cette fiche).
 // 2026-09-23 07:59 (Paris) — V026 — Ajout de la fiche « Ouverture » : couvre à la fois la bague d'ouverture (ring-aperture-lens) et le commutateur du mode d'ouverture (switch-aperture-mode), qui pointent désormais tous les deux vers la même fiche via CONTROL_DETAIL_ALIAS — cohérent avec le fait qu'ils forment une seule et même séquence à 2 étapes dans js/schema-data.js (CONTROL_SEQUENCES.ouverture). Illustration : SVG fourni par l'utilisateur (commutateurs-objectif.svg, schéma du fût de l'objectif : bague crantée d'ouverture + commutateur de mode A/bague), corrigé uniquement pour préfixer l'id du <path> de guidage de texte (« courbe » → « ap-courbe ») afin d'éviter toute collision avec un futur SVG inline du même document (même précaution que pour la molette arrière, cf. préfixe « mra- »). Contenu inchangé sinon.
@@ -67,7 +68,7 @@ const CONTROL_DETAILS={
   'aperture':{
     title:'Ouverture',
     subtitle:"Bague d'ouverture + commutateur du mode d'ouverture · Fujinon XF70-300mm",
-    caption:"Fût de l'objectif : bague crantée d'ouverture (à gauche) et commutateur de mode, repère rouge « A » (à droite)",
+    caption:"Fût de l'objectif : bague crantée d'ouverture (au centre) et commutateur du mode d'ouverture, avec ses deux repères — symbole du diaphragme et repère rouge « A » (à droite)",
     svg:`<svg class="ctrl-svg-aperture" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1446" role="img" aria-label="Bague d'ouverture et commutateur du mode d'ouverture de l'objectif">
 <!-- Bulle encadrant le schéma -->
   <rect x="570" y="871" rx="60" ry="60" width="690" height="515" stroke="#4A5568" stroke-width="18" fill="none"/>
@@ -159,6 +160,7 @@ const CONTROL_DETAILS={
     note:'Fiche en test : contenu à valider et à compléter selon votre boîtier.',
     sections:[
       {title:'Dans le mode M (Manuel)',items:[
+        "Le curseur du commutateur du mode d'ouverture se positionne soit sur le symbole du diaphragme, soit sur le repère rouge « A ».",
         "Sur le symbole du diaphragme : seule la bague crantée de l'objectif règle l'ouverture — la molette du boîtier reste sans effet.",
         "Sur le repère rouge « A » : seule la molette arrière du boîtier règle l'ouverture (réglage « Ouverture » des cartes) — la bague de l'objectif reste sans effet.",
         "Les deux méthodes sont exclusives l'une de l'autre : c'est la position du commutateur qui détermine laquelle est active, jamais les deux en même temps.",
