@@ -72,7 +72,7 @@ const CONTROL_DETAILS={
     caption:"Fût de l'objectif : bague crantée d'ouverture (au centre) et commutateur du mode d'ouverture, avec ses deux repères — symbole du diaphragme et repère rouge « A » (à droite)",
     svg:`<svg class="ctrl-svg-aperture" xmlns="http://www.w3.org/2000/svg" viewBox="540 840 750 580" role="img" aria-label="Bague d'ouverture et commutateur du mode d'ouverture de l'objectif">
 <!-- Bulle encadrant le schéma -->
-  <rect x="570" y="871" rx="60" ry="60" width="690" height="515" stroke="#4A5568" stroke-width="10" stroke-dasharray="50,15" opacity="0.5" fill="none"/>
+  <rect x="570" y="875" rx="60" ry="60" width="686" height="503" stroke="#AE8964" stroke-width="10" stroke-dasharray="50,15" opacity="0.5" fill="none"/>
 <!-- Molette des ouvertures-->
   <path stroke="#2B2B2B" d="M 849.031 884.154 C 850.588 886.232 852.814 907.878 853.284 911.767 L 959.963 911.8 C 959.06 905.818 956.464 898.191 959.35 893.509 C 962.717 891.61 964.369 891.398 966.779 894.365 C 967.812 905.92 969.801 917.366 970.824 928.988 C 982.889 1065.95 983.669 1215.21 956.831 1350.55 C 953.037 1371.17 948.554 1359.27 933.163 1359.49 C 905.265 1359.89 877.35 1359.46 849.454 1358.84 C 841.862 1358.67 834.586 1364.43 830.116 1360.98 C 830.131 1357.72 835.182 1332.12 836.017 1326.51 C 840.776 1296.58 844.569 1266.51 847.391 1236.34 C 857.876 1121.31 855.774 1005.48 841.121 890.909 C 844.847 888.505 846.002 887.218 849.031 884.154 z"/>
   <path fill="rgb(255,255,255)" d="M 863.107 1069.11 L 969.981 1069.13 C 970.021 1083.62 969.983 1098.12 969.865 1112.62 L 863.091 1112.57 L 863.107 1069.11 z"/>
