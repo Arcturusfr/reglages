@@ -1,3 +1,4 @@
+<!-- 2026-09-26 20:05 (Paris) — V030 — Fiche détail « Ouverture » : cause racine de la taille du schéma trouvée et corrigée — viewBox du SVG resserré sur le contenu réellement dessiné (js/control-data.js), qui n'occupait qu'une petite portion du canvas d'origine (0 0 2048 1446) quelle que soit la taille CSS du cadre. Retour à une mise en page 2 colonnes équilibrée ~50/50 (css/styles.css), le schéma remplit désormais réellement sa moitié. En-tête : V029→V030. -->
 <!-- 2026-09-25 22:40 (Paris) — V029 — Fiche détail « Ouverture » : schéma encore agrandi (css/styles.css : popup dédié 900px, colonne média 58%→74%, seuil de repli 1-colonne 300px→480px) ; légende et texte corrigés (bague au centre, 2 repères du commutateur cités, curseur précisé en tête du texte de droite) — js/control-data.js. En-tête : V028→V029. -->
 <!-- 2026-09-25 21:55 (Paris) — V028 — Fiche détail « Ouverture » (js/control-data.js) : bulle encadrant le schéma remplacée par un simple rectangle à coins arrondis (recentré sur molette/commutateurs) ; affichage du schéma nettement agrandi (css/styles.css, colonne média 44%→58%, suppression du plafond de largeur du SVG). En-tête : V027→V028. -->
 <!-- 2026-09-20 01:22 (Paris) — V025 — (1) Flèches de navigation agrandies : boutons import/export (data-icon="swap") et agrandir du drawer (data-icon="expand") rendus en SVG via ICONS (js/utils.js, injection dans js/init.js). (2) Pop-up fiche détail de contrôle : ajout de #ctrl-overlay/#ctrl-popup + scripts js/control-data.js et js/control-popup.js. (3) En-tête : V023→V025. -->
@@ -24,7 +25,7 @@
   <header>
     <div class="logo">
       <div class="logo-title">Photo<span>Manuel</span></div>
-      <div class="logo-version">v 1.6 · V029</div>
+      <div class="logo-version">v 1.6 · V030</div>
     </div>
     <div class="header-actions">
       <div class="theme-toggle">
